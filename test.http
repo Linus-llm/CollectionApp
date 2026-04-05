@@ -1,0 +1,37 @@
+
+@baseUrl = http://localhost:7070/api
+
+### POST
+POST {{baseUrl}}/user
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTgzOTYwLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.1qKjMhVNU8tdVM-UJZHpQ9NtNeX2R6dOKTr74u1ZRmY
+
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "test@dk",
+    "password": "12345678",
+    "phoneNumber": "123456789"
+
+}
+
+###
+GET {{baseUrl}}/user
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTg0MDkxLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.AiSWdUUwdsx_I1FjD2sVMvpYK4mhkFwHM7J2HnUHCU4
+
+###
+POST http://localhost:7070/api/auth/register
+
+{
+    "username": "user",
+    "password": "test123"
+}
+###
+POST http://localhost:7070/api/auth/login
+
+{
+    "username": "user",
+    "password": "test123"
+}
+###
+GET http://localhost:7070/api/auth/protected
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTg0MDkxLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.AiSWdUUwdsx_I1FjD2sVMvpYK4mhkFwHM7J2HnUHCU4

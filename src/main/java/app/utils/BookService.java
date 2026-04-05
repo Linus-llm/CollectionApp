@@ -1,0 +1,169 @@
+package app.utils;
+
+import app.config.HibernateConfig;
+import app.daos.BookDAO;
+import app.daos.CollectionDAO;
+import app.daos.UserDAO;
+import app.dtos.BookDTO;
+import app.dtos.OpenLibraryDTOresponse;
+import app.entities.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManagerFactory;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.*;
+
+public class BookService {
+    private static HttpClient client = HttpClient.newHttpClient();
+    private static ObjectMapper om = new ObjectMapper();
+    private static String getDataFromApiJson(String url) {
+        String bodyText = null;
+        try{
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).version(HttpClient.Version.HTTP_1_1).GET().build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if ( response.statusCode()==200) {
+                bodyText = response.body();
+                return bodyText;
+            }
+                } catch (
+                URISyntaxException | IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        return bodyText;
+    }
+    private static String getDataFromApiJsonWithHeader(String url) {
+        String bodyText = null;
+        try{
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("accept","application/json").version(HttpClient.Version.HTTP_1_1).GET().build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if ( response.statusCode()==200) {
+                bodyText = response.body();
+                return bodyText;
+            }
+        } catch (
+                URISyntaxException | IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return bodyText;
+    }
+
+    public static OpenLibraryDTOresponse getListOfBooksByKeyword(String keyword){
+        OpenLibraryDTOresponse OlDTOresponse = null;
+        keyword = keyword.replace(" ", "+");
+        String url = "https://openlibrary.org/search.json?q="+keyword+"&limit=10";
+        try{
+            OlDTOresponse = om.readValue(getDataFromApiJsonWithHeader(url), OpenLibraryDTOresponse.class);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return OlDTOresponse;
+    }
+
+    public static BookDTO runGetBooksByKeyword(String keyword) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Callable<BookDTO> task = () -> {
+            OpenLibraryDTOresponse bookDTOlist = BookService.getListOfBooksByKeyword(keyword);
+            List<BookDTO> tmpList = bookDTOlist.getDocs();
+
+            if (tmpList == null || tmpList.isEmpty()) {
+                System.out.println("No books found.");
+                return null;
+            }
+
+            for (int i = 0; i < tmpList.size(); i++) {
+                System.out.println((i + 1) + ". " + tmpList.get(i).getTitle());
+            }
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Choose a book by number: ");
+            int choice = scanner.nextInt();
+
+            if (choice < 1 || choice > tmpList.size()) {
+                System.out.println("Invalid choice.");
+                return null;
+            }
+
+            return tmpList.get(choice - 1);
+        };
+
+        try {
+            Future<BookDTO> future = executor.submit(task);
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    public static void saveBookChoiceToDatabase(String keyword){
+        BookDTO dto = runGetBooksByKeyword(keyword);
+        if (dto == null || dto.getTitle() == null || dto.getPublish_year() == 0 || dto.getAuthor().isEmpty()) {
+            System.out.println("Book information is incomplete. Cannot save to database.");
+            return;
+        }
+
+        //Dummy user
+        User user = new User("dummyUser", "UserDummy", "test@test.dk", "test", "12345678");
+        UserDAO userDAO = new UserDAO(HibernateConfig.getEntityManagerFactory());
+
+        //create new collection or add to existing collection
+        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
+        CollectionDAO collectionDAO = new CollectionDAO(emf);
+        Collection collection = new Collection(user, "My Book Collection", "A collection of my favorite books", LocalDateTime.now());
+        Set<Collection> collectionSet = new HashSet<>();
+        collectionSet.add(collection);
+
+        user.setCollections(collectionSet);
+        collection.setUser(user);
+        userDAO.create(user);
+
+
+        // Here you would add code to save the BookDTO to your database using your DAO layer.
+        BookDAO bookDAO = new BookDAO(emf);
+        Scanner scanner = new Scanner(System.in);
+        // DESCRIPTION
+        System.out.print("Enter description: ");
+        String description = scanner.nextLine();
+
+        // STATUS
+        System.out.println("Choose item status:");
+        for (ItemStatus s : ItemStatus.values()) {
+            System.out.println((s.ordinal() + 1) + ". " + s);
+        }
+        int statusChoice = scanner.nextInt();
+        ItemStatus status = ItemStatus.values()[statusChoice - 1];
+
+        // CONDITION
+        System.out.println("Choose item condition:");
+        for (ItemCondition c : ItemCondition.values()) {
+            System.out.println((c.ordinal() + 1) + ". " + c);
+        }
+
+        int conditionChoice = scanner.nextInt();
+        ItemCondition condition = ItemCondition.values()[conditionChoice - 1];
+        Book book = new Book(dto.getTitle(), description, dto.getAuthor(), dto.getPublish_year(), status, condition);
+        book.setCollection(collection);
+        bookDAO.create(book);
+
+        System.out.println("Book saved to database successfully.");
+    }
+
+
+
+}
