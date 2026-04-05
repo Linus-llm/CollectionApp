@@ -26,7 +26,7 @@ public class Collection {
     private String name;
     private String description;
     private LocalDateTime createdAt;
-    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Item> items = new HashSet<>();
 
 

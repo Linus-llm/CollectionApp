@@ -18,8 +18,8 @@ public class Book extends Item{
 
     private List<String> author;
 
-    public Book(String name, String description, List<String> author, int releaseYear, ItemStatus status, ItemCondition condition) {
-        super(name, description, LocalDateTime.now(), ItemType.BOOK, releaseYear, status, condition);
+    public Book(String name, String description, List<String> author, int releaseYear, ItemStatus status, ItemCondition condition, Collection collection) {
+        super(name, description, LocalDateTime.now(), ItemType.BOOK, releaseYear, status, condition, collection);
         this.author = author;
     }
 

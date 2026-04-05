@@ -30,11 +30,11 @@ public class Item {
     @Enumerated(EnumType.STRING)
     public ItemCondition condition;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "collection_id", nullable = false)
     public Collection collection;
 
-    public Item(String name, String description, LocalDateTime createdAt, ItemType type, int releaseYear, ItemStatus status, ItemCondition condition) {
+    public Item(String name, String description, LocalDateTime createdAt, ItemType type, int releaseYear, ItemStatus status, ItemCondition condition, Collection collection) {
         this.name = name;
         this.description = description;
         this.createdAt = createdAt;
@@ -42,5 +42,6 @@ public class Item {
         this.type = type;
         this.status = status;
         this.condition = condition;
+        this.collection = collection;
     }
 }

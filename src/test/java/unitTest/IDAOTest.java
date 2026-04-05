@@ -20,7 +20,7 @@ import java.util.Set;
 public class IDAOTest {
     private static EntityManagerFactory emf;
     private static IDAO<User> userDAO;
-    private static IDAO<Collection> collectionDAO;
+    private static CollectionDAO collectionDAO;
     private static IDAO<Item> itemDAO;
     private static SecurityDao securityDAO;
     @BeforeAll
@@ -46,20 +46,20 @@ public class IDAOTest {
 
         // Items (each belongs to one Collection)
         Item i1 = new Item("The Witcher 3", "Complete Edition", LocalDateTime.now().minusDays(9),
-                ItemType.VIDEO_GAME, 2015, ItemStatus.OWNED, ItemCondition.GOOD);
-        i1.setCollection(c1);
+                ItemType.VIDEO_GAME, 2015, ItemStatus.OWNED, ItemCondition.GOOD,c1);
+
 
         Item i2 = new Item("Nintendo Switch", "OLED model", LocalDateTime.now().minusDays(7),
-                ItemType.CONSOLE, 2021, ItemStatus.OWNED, ItemCondition.GOOD);
-        i2.setCollection(c2);
+                ItemType.CONSOLE, 2021, ItemStatus.OWNED, ItemCondition.GOOD,c1);
+
 
         Item i3 = new Item("Dune", "Frank Herbert", LocalDateTime.now().minusDays(4),
-                ItemType.BOOK, 1965, ItemStatus.WISHLIST, ItemCondition.NEW);
-        i3.setCollection(c3);
+                ItemType.BOOK, 1965, ItemStatus.WISHLIST, ItemCondition.NEW,c1);
+
 
         Item i4 = new Item("Zelda: TOTK", "Physical copy", LocalDateTime.now().minusDays(3),
-                ItemType.VIDEO_GAME, 2023, ItemStatus.BORROWED, ItemCondition.GOOD);
-        i4.setCollection(c1);
+                ItemType.VIDEO_GAME, 2023, ItemStatus.BORROWED, ItemCondition.GOOD, c1);
+
 
         itemDAO.create(i1);
         itemDAO.create(i2);
@@ -82,6 +82,68 @@ public class IDAOTest {
         Set<User> testUsers = userDAO.getAll();
         assertNotNull(testUsers);
         assertTrue(testUsers.size() >= 2); // We created 3 users in the setup
+    }
+
+    @Test
+    void getUserById() {
+        securityDAO.createUser("Testusername6", "password", "testemail@dk.dk");
+        User user = userDAO.getByID(4);
+        assertNotNull(user);
+        assertEquals("Testusername6", user.getUsername());
+    }
+
+    @Test
+    void updateUser(){
+        securityDAO.createUser("Testusername", "password", "testemail@dk.dk");
+        User user = userDAO.getByID(1);
+        user.setUsername("UpdatedUsername");
+        userDAO.update(user);
+        User updatedUser = userDAO.getByID(1);
+        assertNotNull(updatedUser);
+        assertEquals("UpdatedUsername", updatedUser.getUsername());
+    }
+
+    @Test
+    void deleteUser(){
+        securityDAO.createUser("Testusername2", "password", "testemail@dk.dk");
+        User founduser = userDAO.getByID(1);
+        userDAO.delete(founduser);
+        User deletedUser = userDAO.getByID(1);
+        assertNull(deletedUser);
+    }
+
+    @Test
+    void createCollection(){
+        User foundUser = userDAO.getByID(1);
+        collectionDAO.create(new Collection(foundUser, "Test Collection", "A collection for testing", LocalDateTime.now()));
+        User foundUser2 = userDAO.getByID(1);
+        Set<Collection> foundUserCollections = foundUser2.getCollections();
+        assertNotNull(foundUserCollections.iterator().next());
+        assertEquals("Test Collection", foundUserCollections.iterator().next().getName());
+    }
+
+    @Test
+    void getCollectionByName(){
+        User foundUser = userDAO.getByID(1);
+        Collection foundCollection = collectionDAO.getByName("Games", foundUser);
+        assertNotNull(foundCollection);
+        assertEquals("Games", foundCollection.getName());
+    }
+
+    @Test
+    void createItem(){
+        Collection c1 = collectionDAO.getByName("Games", userDAO.getByID(1));
+        itemDAO.create(new Item("test", "Physical copy", LocalDateTime.now().minusDays(3),
+                ItemType.VIDEO_GAME, 2023, ItemStatus.BORROWED, ItemCondition.GOOD,c1));
+        assertNotNull(c1.getItems());
+
+        for (Item item : c1.getItems()) {
+            if (item.getName().equals("test")) {
+                assertEquals("test", item.getName());
+                return;
+            }
+        }
+
     }
 
 

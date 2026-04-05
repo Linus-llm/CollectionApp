@@ -136,7 +136,7 @@ public class BookService {
         if (collectionChoice.equalsIgnoreCase("existing")) {
 
             System.out.println("Enter the name of the existing collection: ");
-             collection = collectionDAO.getByName(scanner.nextLine());
+             collection = collectionDAO.getByName(scanner.nextLine(), user);
             if (collection == null) {
                 System.out.println("Collection not found.");
                 return;
@@ -173,8 +173,7 @@ public class BookService {
 
         int conditionChoice = scanner.nextInt();
         ItemCondition condition = ItemCondition.values()[conditionChoice - 1];
-        Book book = new Book(dto.getTitle(), description, dto.getAuthor(), dto.getPublish_year(), status, condition);
-        book.setCollection(collection);
+        Book book = new Book(dto.getTitle(), description, dto.getAuthor(), dto.getPublish_year(), status, condition, collection);
         bookDAO.create(book);
 
         System.out.println("Book saved to database successfully.");

@@ -86,8 +86,9 @@ public class ItemControllerTest {
         securityDAO.createUser("lars", "password123", "test@test.dk");
         collectionDAO.create(new Collection(userDAO.getByID(1), "Lars' collection", "A collection of items", LocalDateTime.now()));
         Set<Collection> collections = new HashSet<>();
-        collections.add(collectionDAO.getByName("Lars' collection"));
         User user = userDAO.getByID(1);
+        collections.add(collectionDAO.getByName("Lars' collection", user));
+
         user.setCollections(collections);
         userDAO.update(user);
 

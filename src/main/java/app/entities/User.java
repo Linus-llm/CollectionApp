@@ -27,7 +27,7 @@ public class User implements ISecurityUser {
     @ManyToMany(fetch = FetchType.EAGER)
     Set<UserRole> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Collection> collections = new HashSet<>();
 
     public User(String username, String password, String email ){

@@ -2,6 +2,7 @@ package app.daos;
 
 import app.Main;
 import app.entities.Collection;
+import app.entities.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -63,10 +64,10 @@ public class CollectionDAO implements IDAO<Collection> {
         }
     }
 
-    public Collection getByName(String name) {
+    public Collection getByName(String name, User user) {
         try(EntityManager em = emf.createEntityManager()) {
-            return em.createQuery("SELECT c FROM Collection c WHERE c.name = :name", Collection.class)
-                    .setParameter("name", name)
+            return em.createQuery("SELECT c FROM Collection c WHERE c.name = :name AND c.user.username = :username", Collection.class)
+                    .setParameter("name", name).setParameter("username", user.getUsername())
                     .getSingleResult();
         }
     }
