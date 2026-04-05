@@ -29,9 +29,9 @@ public class SecurityDao implements ISecurityDAO{
     }
 
     @Override
-    public User createUser(String username, String password) {
+    public User createUser(String username, String password, String email) {
         try(EntityManager em = emf.createEntityManager()){
-            User user = new User(username, password);
+            User user = new User(username, password, email);
             UserRole userRole = em.find(UserRole.class, "user");
             em.getTransaction().begin();
             if(userRole == null){
@@ -58,7 +58,7 @@ public class SecurityDao implements ISecurityDAO{
 
     public static void main(String[] args) {
         ISecurityDAO dao = new SecurityDao(HibernateConfig.getEntityManagerFactory());
-        User user = dao.createUser("newUser3", "newPassword");
+        User user = dao.createUser("newUser3", "newPassword", "email@email");
         try {
             User foundUser = dao.getVerifiedUser("newUser3", "newPassword");
             System.out.println(foundUser.getUsername());

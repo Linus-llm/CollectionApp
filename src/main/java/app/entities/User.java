@@ -20,10 +20,7 @@ import java.util.stream.Collectors;
 public class User implements ISecurityUser {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String firstName;
-    private String lastName;
     private String email;
-    private String phoneNumber;
     private String password;
     @Column(name = "username", nullable = false)
     private String username;
@@ -33,20 +30,12 @@ public class User implements ISecurityUser {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Collection> collections = new HashSet<>();
 
-
-    public User(String firstName, String lastName, String email, String password, String phoneNumber) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-    }
-
-    public User(String username, String password ){
+    public User(String username, String password, String email ){
         String salt = BCrypt.gensalt(12);
         String hashedPassword = BCrypt.hashpw(password, salt);
         this.username = username;
         this.password = hashedPassword;
+        this.email = email;
     }
 
     @Override

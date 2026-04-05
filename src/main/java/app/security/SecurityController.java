@@ -50,12 +50,12 @@ public class SecurityController implements ISecurityController {
     @Override
     public void register(Context ctx) {
 
-        UserDTO user = ctx.bodyAsClass(UserDTO.class);
-        if(user == null || user.getUsername() == null || user.getPassword() == null){
-            ctx.status(400).result("Username and password are required");
+        User user = ctx.bodyAsClass(User.class);
+        if(user == null || user.getUsername() == null || user.getPassword() == null || user.getEmail() == null ){
+            ctx.status(400).result("Username, password and email are required");
             return;
         }
-        securityDAO.createUser(user.getUsername(), user.getPassword());
+        securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
         ObjectNode response = mapper.createObjectNode();
         response.put("msg", "User registered");
         ctx.json(response).status(201);

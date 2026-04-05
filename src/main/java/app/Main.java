@@ -42,7 +42,8 @@ public class Main {
         app.get("/api/auth/protected", ctx-> ctx.json("test").status(200), Role.USER);
         //USER
         app.get("/api/user", userController::handleGetUsers, Role.USER);
-        app.post("/api/user", userController::handleCreateUser, Role.USER);
+        //this endpoint is not needed since we have register, and we don't want users to create other users, so it's commented out
+        //app.post("/api/user", userController::handleCreateUser, Role.USER);
         app.get("/api/user/{id}", userController::handleGetUserById, Role.USER);
         app.put("/api/user/{id}", userController::handleUpdateUser, Role.USER);
         app.delete("/api/user/{id}", userController::handleDeleteUser, Role.USER);

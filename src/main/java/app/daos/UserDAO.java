@@ -16,7 +16,7 @@ public class UserDAO implements IDAO<User> {
     @Override
     public void create(User user) {
         // Implementation for creating a user in the database
-        try(EntityManager em = Main.emf.createEntityManager()) {
+        try(EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
             em.persist(user);
             em.getTransaction().commit();
@@ -26,7 +26,7 @@ public class UserDAO implements IDAO<User> {
     @Override
     public Set<User> getAll() {
         // Implementation for retrieving all users from the database
-        try(EntityManager em = Main.emf.createEntityManager()) {
+        try(EntityManager em = emf.createEntityManager()) {
             return new HashSet<>(em.createQuery("SELECT u FROM User u", User.class).getResultList());
         }
     }
@@ -34,7 +34,7 @@ public class UserDAO implements IDAO<User> {
     @Override
     public User getByID(int id) {
         // Implementation for retrieving a user by ID from the database
-        try(EntityManager em = Main.emf.createEntityManager()) {
+        try(EntityManager em = emf.createEntityManager()) {
             return em.find(User.class, id);
         }
     }
@@ -42,7 +42,7 @@ public class UserDAO implements IDAO<User> {
     @Override
     public User update(User user) {
         // Implementation for updating a user in the database
-        try(EntityManager em = Main.emf.createEntityManager()) {
+        try(EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
             em.merge(user);
             em.getTransaction().commit();
@@ -53,7 +53,7 @@ public class UserDAO implements IDAO<User> {
     @Override
     public int delete(User user) {
         // Implementation for deleting a user from the database
-        try(EntityManager em = Main.emf.createEntityManager()) {
+        try(EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
             if (user != null) {
                 em.remove(user);

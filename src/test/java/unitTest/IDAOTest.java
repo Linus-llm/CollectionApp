@@ -6,32 +6,34 @@ import app.daos.IDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
 import app.entities.*;
+import app.security.ISecurityDAO;
+import app.security.SecurityDao;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public class IDAOTest {
     private static EntityManagerFactory emf;
     private static IDAO<User> userDAO;
     private static IDAO<Collection> collectionDAO;
     private static IDAO<Item> itemDAO;
+    private static SecurityDao securityDAO;
     @BeforeAll
     static void setUp() {
         emf = HibernateConfig.getEntityManagerFactoryForTest();
         userDAO = new UserDAO(emf);
         collectionDAO = new CollectionDAO(emf);
         itemDAO = new ItemDAO(emf);
+        securityDAO = new SecurityDao(emf);
 
-        User u1 = new User("John", "Doe", "john@example.dk", "test", "+45302123042");
-        User u2 = new User("Alice", "Johnson", "alice@example.dk", "test", "+45432123042");
-        User u3 = new User("Bob", "Nielsen", "bob@example.dk", "test", "+45111111111");
-
-        userDAO.create(u1);
-        userDAO.create(u2);
-        userDAO.create(u3);
+        User u1 = securityDAO.createUser("Testusername", "1234556", "Test@email");
+        User u2 = securityDAO.createUser("Testusername2", "1234552", "Test@email2");
+        User u3 = securityDAO.createUser("Testusername3", "1234556", "Test@email3");
 
         // Collections (each belongs to exactly one user, per your current mapping)
         Collection c1 = new Collection(u1, "Games", "My video game library", LocalDateTime.now().minusDays(10));
@@ -67,13 +69,19 @@ public class IDAOTest {
     }
 
     @Test
-    void create() {
+    void createUser() {
         // This test relies on the setup method to create entities, so we just check if they exist
-        User testu1 = new User("Test","Test", "test@example.dk", "test ", "+4500000000");
-        userDAO.create(testu1);
-        User retrieved = userDAO.getByID(testu1.getId());
-        assert retrieved != null;
-        assert retrieved.getEmail().equals("test@example.dk");
+
+        User createdUser = securityDAO.createUser("testu1", "password", "testemail@dk.dk");
+        assertNotNull(createdUser);
+        assertEquals("testemail@dk.dk", createdUser.getEmail());
+    }
+    @Test
+    void getAllUsers() {
+
+        Set<User> testUsers = userDAO.getAll();
+        assertNotNull(testUsers);
+        assertTrue(testUsers.size() >= 2); // We created 3 users in the setup
     }
 
 

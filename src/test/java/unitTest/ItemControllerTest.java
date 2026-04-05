@@ -10,6 +10,8 @@ import app.daos.ItemDAO;
 import app.daos.UserDAO;
 import app.entities.Collection;
 import app.entities.User;
+import app.security.SecurityController;
+import app.security.SecurityDao;
 import io.javalin.Javalin;
 import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
@@ -37,6 +39,8 @@ public class ItemControllerTest {
     static ItemController itemController = new ItemController(itemDAO, bookDAO, collectionDAO);
     static CollectionController collectionController = new CollectionController(userDAO, collectionDAO);
     static UserController userController = new UserController(userDAO);
+    static SecurityController securityController = new SecurityController();
+    static SecurityDao securityDAO = new SecurityDao(emf);
     static Javalin app;
 
     @BeforeAll
@@ -47,7 +51,8 @@ public class ItemControllerTest {
         app.get("/", ctx -> ctx.result("Server running"));
         //USER
         app.get("/api/user", userController::handleGetUsers);
-        app.post("/api/user", userController::handleCreateUser);
+        app.post("/api/auth/login", securityController::login);
+        app.post("/api/auth/register", securityController::register);
         app.get("/api/user/{id}", userController::handleGetUserById);
         app.put("/api/user/{id}", userController::handleUpdateUser);
         app.delete("/api/user/{id}", userController::handleDeleteUser);
@@ -78,7 +83,7 @@ public class ItemControllerTest {
     public void createBookTest() {
         RestAssured.baseURI = "http://localhost:7070/api";
 
-        userDAO.create(new User("Lars", "Larsen", "lars@dk", "password", "12345678"));
+        securityDAO.createUser("lars", "password123", "test@test.dk");
         collectionDAO.create(new Collection(userDAO.getByID(1), "Lars' collection", "A collection of items", LocalDateTime.now()));
         Set<Collection> collections = new HashSet<>();
         collections.add(collectionDAO.getByName("Lars' collection"));

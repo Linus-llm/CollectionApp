@@ -28,7 +28,7 @@ public class UserController {
         Set<User> setOfUsers = userDAO.getAll();
         //convert user to userDTO to only return first name and email
         Set<UserRequestDTO> dtoSet = setOfUsers.stream()
-                .map(u -> new UserRequestDTO(u.getFirstName(), u.getEmail()))
+                .map(u -> new UserRequestDTO(u.getUsername(), u.getEmail()))
                 .collect(Collectors.toSet());
 
         ctx.json(dtoSet);
@@ -41,19 +41,9 @@ public class UserController {
             return;
         }
 
-        ctx.json(new UserRequestDTO(user.getFirstName(), user.getEmail()));
+        ctx.json(new UserRequestDTO(user.getUsername(), user.getEmail()));
     }
-    public void handleCreateUser(Context ctx){
-        User received = ctx.bodyAsClass(User.class);
-        if (received.getFirstName() == null || received.getPassword() == null || received.getLastName() == null || received.getEmail() == null || received.getPhoneNumber() == null){
-            ctx.status(400).result("Invalid user data");
-            return;
-        }
 
-        User newUser = new User(received.getFirstName(), received.getLastName(), received.getEmail(), received.getPassword(), received.getPhoneNumber());
-        userDAO.create(newUser);
-        ctx.status(201).json(new UserRequestDTO(newUser.getFirstName(), newUser.getEmail()));
-    }
     public void handleUpdateUser(Context ctx){
         int id = Integer.parseInt(ctx.pathParam("id"));
         User existingUser = userDAO.getByID(id);
@@ -62,17 +52,11 @@ public class UserController {
             return;
         }
         User received = ctx.bodyAsClass(User.class);
-        if (received.getFirstName() == null) {
-            received.setFirstName(existingUser.getFirstName());
-            existingUser.setFirstName(received.getFirstName());
+        if (received.getUsername() == null) {
+            received.setUsername(existingUser.getUsername());
+            existingUser.setUsername(received.getUsername());
         } else {
-            existingUser.setFirstName(received.getFirstName());
-        }
-        if (received.getLastName() == null) {
-            received.setLastName(existingUser.getLastName());
-            existingUser.setLastName(received.getLastName());
-        } else {
-            existingUser.setLastName(received.getLastName());
+            existingUser.setUsername(received.getUsername());
         }
         if (received.getEmail() == null) {
             received.setEmail(existingUser.getEmail());
@@ -86,14 +70,8 @@ public class UserController {
         } else {
             existingUser.setPassword(received.getPassword());
         }
-        if (received.getPhoneNumber() == null) {
-            received.setPhoneNumber(existingUser.getPhoneNumber());
-            existingUser.setPhoneNumber(received.getPhoneNumber());
-        } else {
-            existingUser.setPhoneNumber(received.getPhoneNumber());
-        }
         userDAO.update(existingUser);
-        ctx.json(new UserRequestDTO(existingUser.getFirstName(), existingUser.getEmail()));
+        ctx.json(new UserRequestDTO(existingUser.getUsername(), existingUser.getEmail()));
     }
     public void handleDeleteUser(Context ctx) {
         int id = Integer.parseInt(ctx.pathParam("id"));
