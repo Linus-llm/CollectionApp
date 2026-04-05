@@ -110,33 +110,48 @@ public class BookService {
             executor.shutdown();
         }
     }
-
-    public static void saveBookChoiceToDatabase(String keyword){
+    // method is just a placeholder before frontend is implemented (its a quick fix to see if the book information is correctly retrieved and can be saved to the database)
+    public static void saveBookChoiceToDatabase(String keyword, int userId){
         BookDTO dto = runGetBooksByKeyword(keyword);
         if (dto == null || dto.getTitle() == null || dto.getPublish_year() == 0 || dto.getAuthor().isEmpty()) {
             System.out.println("Book information is incomplete. Cannot save to database.");
             return;
         }
 
-        //Dummy user
-        User user = new User("dummyUser", "UserDummy", "test@test.dk", "test", "12345678");
+        //find user
         UserDAO userDAO = new UserDAO(HibernateConfig.getEntityManagerFactory());
 
+        User user = userDAO.getByID(userId);
+
+        //scanner object for user input (console as of now)
+        Scanner scanner = new Scanner(System.in);
+
         //create new collection or add to existing collection
+        Collection collection;
+
         EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
         CollectionDAO collectionDAO = new CollectionDAO(emf);
-        Collection collection = new Collection(user, "My Book Collection", "A collection of my favorite books", LocalDateTime.now());
-        Set<Collection> collectionSet = new HashSet<>();
-        collectionSet.add(collection);
+        System.out.println("Do you want to add the book to an existing collection or create a new one? (existing/new): ");
+        String collectionChoice = scanner.nextLine();
+        if (collectionChoice.equalsIgnoreCase("existing")) {
 
-        user.setCollections(collectionSet);
-        collection.setUser(user);
-        userDAO.create(user);
+            System.out.println("Enter the name of the existing collection: ");
+             collection = collectionDAO.getByName(scanner.nextLine());
+            if (collection == null) {
+                System.out.println("Collection not found.");
+                return;
+            }
+        }
+        else {
+        collection = new Collection(user, "My Book Collection", "A collection of my favorite books", LocalDateTime.now());
+        collectionDAO.create(collection);
+        }
+
 
 
         // Here you would add code to save the BookDTO to your database using your DAO layer.
         BookDAO bookDAO = new BookDAO(emf);
-        Scanner scanner = new Scanner(System.in);
+
         // DESCRIPTION
         System.out.print("Enter description: ");
         String description = scanner.nextLine();
@@ -147,6 +162,7 @@ public class BookService {
             System.out.println((s.ordinal() + 1) + ". " + s);
         }
         int statusChoice = scanner.nextInt();
+        scanner.nextLine();
         ItemStatus status = ItemStatus.values()[statusChoice - 1];
 
         // CONDITION
