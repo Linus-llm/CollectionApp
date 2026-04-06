@@ -10,6 +10,7 @@ import app.daos.ItemDAO;
 import app.daos.UserDAO;
 import app.entities.Collection;
 import app.entities.User;
+import app.security.Role;
 import app.security.SecurityController;
 import app.security.SecurityDao;
 
@@ -50,28 +51,28 @@ public class ControllerTest {
                 .beforeMatched(securityController::authorize);;
         app.get("/", ctx -> ctx.result("Server running"));
         //USER
-        app.get("/api/user", userController::handleGetUsers);
+        app.get("/api/user", userController::handleGetUsers, Role.USER);
         app.post("/api/auth/login", securityController::login);
         app.post("/api/auth/register", securityController::register);
-        app.get("/api/user/{id}", userController::handleGetUserById);
-        app.put("/api/user/{id}", userController::handleUpdateUser);
-        app.delete("/api/user/{id}", userController::handleDeleteUser);
+        app.get("/api/user/{id}", userController::handleGetUserById,Role.USER);
+        app.put("/api/user/{id}", userController::handleUpdateUser,Role.USER);
+        app.delete("/api/user/{id}", userController::handleDeleteUser,Role.USER);
 
         //COLLECTION
-        app.get("/api/user/{userId}/collection", collectionController::handleGetCollectionsForUser);
-        app.post("/api/user/{userId}/collection", collectionController::handleCreateCollection);
-        app.get("/api/collection/{collectionId}", collectionController::handleGetCollectionById);
-        app.put("/api/collection/{collectionId}", collectionController::handleUpdateCollection);
-        app.delete("/api/collection/{collectionId}", collectionController::handleDeleteCollection);
+        app.get("/api/user/{userId}/collection", collectionController::handleGetCollectionsForUser,Role.USER);
+        app.post("/api/user/{userId}/collection", collectionController::handleCreateCollection,Role.USER);
+        app.get("/api/collection/{collectionId}", collectionController::handleGetCollectionById,Role.USER);
+        app.put("/api/collection/{collectionId}", collectionController::handleUpdateCollection,Role.USER);
+        app.delete("/api/collection/{collectionId}", collectionController::handleDeleteCollection,Role.USER);
 
         //ITEM
-        app.get("/api/item/{itemId}", itemController::handleGetItemById);
-        app.get("/api/collection/{collectionId}/item", itemController::handleGetItemsForCollection);
-        app.put("/api/item/{itemId}", itemController::handleUpdateItem);
-        app.delete("/api/item/{itemId}", itemController::handleDeleteItem);
+        app.get("/api/item/{itemId}", itemController::handleGetItemById,Role.USER);
+        app.get("/api/collection/{collectionId}/item", itemController::handleGetItemsForCollection,Role.USER);
+        app.put("/api/item/{itemId}", itemController::handleUpdateItem,Role.USER);
+        app.delete("/api/item/{itemId}", itemController::handleDeleteItem,Role.USER);
 
         //BOOKS (item)
-        app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection);
+        app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection,Role.USER);
     }
 
     @AfterAll
@@ -88,33 +89,81 @@ public class ControllerTest {
     public void createBookTest() {
         RestAssured.baseURI = "http://localhost:7070/api";
 
-        securityDAO.createUser("lars", "password123", "test@test.dk");
-        collectionDAO.create(new Collection(userDAO.getByID(1), "Lars' collection", "A collection of items", LocalDateTime.now()));
-        Set<Collection> collections = new HashSet<>();
-        User user = userDAO.getByID(1);
-        collections.add(collectionDAO.getByName("Lars' collection", user));
-
-        user.setCollections(collections);
-        userDAO.update(user);
-
-        given()
+        // 1. Register user and extract userId
+        int userId = given()
                 .contentType("application/json")
                 .body("""
+                {
+                  "username": "Lars",
+                  "email": "test@test.dk",
+                  "password": "password123"
+                }
+                """)
+                .when()
+                .post("/auth/register")
+                .then()
+                .statusCode(201)
+                .body("msg", equalTo("User registered"))
+                .extract()
+                .path("id");
 
-                        {
-          "title": "Sunrise paints the sky",
-          "description": "Sunrise paints the sky, Gentle waves kiss sandy shores, Day awakens slow.",
-          "authors": ["D. Tyrell", "R. Monke"],
+        // 2. Login and extract token
+        String token = given()
+                .contentType("application/json")
+                .body("""
+                {
+                  "username": "Lars",
+                  "password": "password123"
+                }
+                """)
+                .when()
+                .post("/auth/login")
+                .then()
+                .statusCode(200)
+                .body("username", equalTo("Lars"))
+                .extract()
+                .path("token");
+
+        // 3. Create collection and extract collectionId
+        int collectionId = given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body("""
+                {
+                  "name": "Lars' collection",
+                  "description": "A collection of items"
+                }
+                """)
+                .when()
+                .post("/user/" + userId + "/collection")
+                .then()
+                .statusCode(201)
+                .body("name", equalTo("Lars' collection"))
+                .extract()
+                .path("id");
+
+        // 4. Create book in that collection
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body("""
+                {
+                  "title": "Sunrise paints the sky",
+                  "description": "Sunrise paints the sky, Gentle waves kiss sandy shores, Day awakens slow.",
+                  "authors": ["D. Tyrell", "R. Monke"],
                   "releaseYear": 2023,
                   "status": "OWNED",
                   "condition": "GOOD"
-        }
-        """)
+                }
+                """)
                 .when()
-                .post("/collection/1/item")
-                .then().log().all()
+                .post("/collection/" + collectionId + "/item")
+                .then()
+                .log().all()
                 .statusCode(201)
-                .body("name", equalTo("Sunrise paints the sky"));
+                .body("name", equalTo("Sunrise paints the sky"))
+                .body("releaseYear", equalTo(2023))
+                .body("collectionId", equalTo(collectionId));
     }
 
     @Test
@@ -203,6 +252,7 @@ public class ControllerTest {
 
         //6.  test if items are returned when getting items for collection 1
         given()
+                .header("Authorization", "Bearer " + token)
                 .when()
                 .get("/collection/"+collectionId+"/item")
                 .then()
@@ -298,6 +348,8 @@ public class ControllerTest {
                 .statusCode(201)
                 .body("msg", equalTo("User registered"));
 
+
+
         //------------------------------------------
 
         given().contentType("application/json").body("""
@@ -309,6 +361,20 @@ public class ControllerTest {
     }"""
         ).when().post("/auth/login").then().log().all().statusCode(200).body("username", equalTo("John"));
     }
+
+    @Test
+    public void accessProtectedEndpointWithoutTokenTest(){
+        RestAssured.baseURI = "http://localhost:7070/api";
+
+        given()
+                .when()
+                .get("/user/1")
+                .then()
+                .statusCode(401)
+                .body(equalTo("Authorization header is missing"));
+    }
+
+
 
     //------------------------------------------
     // CollectionController tests
