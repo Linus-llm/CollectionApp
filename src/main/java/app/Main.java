@@ -49,20 +49,20 @@ public class Main {
         app.delete("/api/user/{id}", userController::handleDeleteUser, Role.USER);
 
         //COLLECTION
-        app.get("/api/collection/{userId}", collectionController::handleGetCollectionsForUser, Role.USER);
+        app.get("/api/user/{userId}/collection", collectionController::handleGetCollectionsForUser, Role.USER);
+        app.post("/api/user/{userId}/collection", collectionController::handleCreateCollection, Role.USER);
         app.get("/api/collection/{collectionId}", collectionController::handleGetCollectionById, Role.USER);
-        app.post("/api/collection/{userId}", collectionController::handleCreateCollection, Role.USER);
         app.put("/api/collection/{collectionId}", collectionController::handleUpdateCollection, Role.USER);
         app.delete("/api/collection/{collectionId}", collectionController::handleDeleteCollection, Role.USER);
 
         //ITEM
         app.get("/api/item/{itemId}", itemController::handleGetItemById,Role.USER);
-        app.get("/api/item/{collectionId}", itemController::handleGetItemsForCollection,Role.USER);
+        app.get("/api/collection/{collectionId}/item", itemController::handleGetItemsForCollection,Role.USER);
         app.put("/api/item/{itemId}", itemController::handleUpdateItem,Role.USER);
         app.delete("/api/item/{itemId}", itemController::handleDeleteItem,Role.USER);
 
         //BOOKS (item)
-        app.post("api/item/{collectionId}", itemController::handleCreateBookInCollection,Role.USER);
+        app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection,Role.USER);
 
 
     }

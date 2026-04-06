@@ -1,5 +1,6 @@
 package app.security;
 
+import app.Main;
 import app.config.HibernateConfig;
 import app.entities.User;
 import app.exceptions.ApiException;
@@ -20,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SecurityController implements ISecurityController {
-    private EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
+    private EntityManagerFactory emf = app.Main.emf;
     private SecurityDao securityDAO = new SecurityDao(emf);
     private ObjectMapper mapper = new ObjectMapper();
     private ITokenSecurity tokenSecurity = new TokenSecurity();
@@ -55,9 +56,11 @@ public class SecurityController implements ISecurityController {
             ctx.status(400).result("Username, password and email are required");
             return;
         }
-        securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
+        User createdUser = securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
         ObjectNode response = mapper.createObjectNode();
         response.put("msg", "User registered");
+        response.put("id", createdUser.getId());
+        response.put("username", createdUser.getUsername());
         ctx.json(response).status(201);
     }
 
