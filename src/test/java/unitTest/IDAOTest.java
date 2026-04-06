@@ -76,6 +76,14 @@ public class IDAOTest {
         assertNotNull(createdUser);
         assertEquals("testemail@dk.dk", createdUser.getEmail());
     }
+
+    @Test
+    void getVerifiedUser(){
+        User verifiedUser = securityDAO.getVerifiedUser("Testusername", "1234556");
+        assertNotNull(verifiedUser);
+        assertEquals("Testusername", verifiedUser.getUsername());
+    }
+
     @Test
     void getAllUsers() {
 

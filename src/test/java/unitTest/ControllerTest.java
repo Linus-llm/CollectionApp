@@ -12,6 +12,7 @@ import app.entities.Collection;
 import app.entities.User;
 import app.security.SecurityController;
 import app.security.SecurityDao;
+
 import io.javalin.Javalin;
 import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
@@ -20,9 +21,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItems;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -30,7 +28,7 @@ import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 
-public class ItemControllerTest {
+public class ControllerTest {
     static EntityManagerFactory emf = HibernateConfig.getEntityManagerFactoryForTest();
     static ItemDAO itemDAO = new ItemDAO(emf);
     static UserDAO userDAO = new UserDAO(emf);
@@ -119,16 +117,46 @@ public class ItemControllerTest {
                 .contentType("application/json")
                 .body("""
         {
-          "firstName": "John",
-          "lastName": "Doe",
+          "username": "John",
           "email": "test@dk",
-          "password": "password",
-          "phoneNumber": "12345678"
+          "password": "password"
+         
   
     }"""
-                ).when().post("/user").then().log().all()
+                ).when().post("/auth/register").then().log().all()
                 .statusCode(201)
-                .body("firstName", equalTo("John"));
+                .body("msg", equalTo("User registered"));
 
 }
+
+    @Test
+    public void loginTest(){
+
+        RestAssured.baseURI = "http://localhost:7070/api";
+
+        given()
+                .contentType("application/json")
+                .body("""
+        {
+          "username": "John",
+          "email": "test@dk",
+          "password": "password"
+         
+  
+    }"""
+                ).when().post("/auth/register").then().log().all()
+                .statusCode(201)
+                .body("msg", equalTo("User registered"));
+
+        //------------------------------------------
+
+        given().contentType("application/json").body("""
+        {
+          "username": "John",
+          "password": "password"
+         
+  
+    }"""
+        ).when().post("/auth/login").then().log().all().statusCode(200).body("username", equalTo("John"));
+    }
 }

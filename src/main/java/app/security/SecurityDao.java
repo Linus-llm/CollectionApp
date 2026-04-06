@@ -56,14 +56,5 @@ public class SecurityDao implements ISecurityDAO{
         return null;
     }
 
-    public static void main(String[] args) {
-        ISecurityDAO dao = new SecurityDao(HibernateConfig.getEntityManagerFactory());
-        User user = dao.createUser("newUser3", "newPassword", "email@email");
-        try {
-            User foundUser = dao.getVerifiedUser("newUser3", "newPassword");
-            System.out.println(foundUser.getUsername());
-        } catch (ValidationException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }

@@ -116,8 +116,8 @@ public class SecurityController implements ISecurityController {
             }
             return tokenSecurity.createToken(user, ISSUER, TOKEN_EXPIRE_TIME, SECRET_KEY);
         } catch (Exception e) {
-            //logger.error("Could not create token", e);
-            throw new ApiException(500, "Could not create token");
+            e.printStackTrace();
+            throw new ApiException(500, "Could not create token: " + e.getMessage());
         }
     }
 
