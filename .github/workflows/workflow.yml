@@ -36,4 +36,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/collectionapp:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/collectionapp:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/collectionapp:${{ github.sha }}
