@@ -6,6 +6,8 @@ import app.daos.ItemDAO;
 import app.daos.UserDAO;
 import app.dtos.UserRequestDTO;
 import app.entities.User;
+import app.exceptions.ApiException;
+import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -28,7 +30,7 @@ public class UserController {
         Set<User> setOfUsers = userDAO.getAll();
         //convert user to userDTO to only return first name and email
         Set<UserRequestDTO> dtoSet = setOfUsers.stream()
-                .map(u -> new UserRequestDTO(u.getUsername(), u.getEmail()))
+                .map(u -> new UserRequestDTO(u.getEmail()))
                 .collect(Collectors.toSet());
 
         ctx.json(dtoSet);
@@ -41,12 +43,20 @@ public class UserController {
             return;
         }
 
-        ctx.json(new UserRequestDTO(user.getUsername(), user.getEmail()));
+        ctx.json(new UserRequestDTO(user.getEmail()));
     }
 
     public void handleUpdateUser(Context ctx){
         int id = Integer.parseInt(ctx.pathParam("id"));
+
+        UserDTO tokenUser = ctx.attribute("user");
+
         User existingUser = userDAO.getByID(id);
+
+        if (!tokenUser.getUsername().equals(existingUser.getUsername())) {
+            ctx.status(403).result("Forbidden you can only update your own user information");
+        }
+
         if (existingUser == null){
             ctx.status(404).result("User not found");
             return;
@@ -76,6 +86,12 @@ public class UserController {
     public void handleDeleteUser(Context ctx) {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User userToDelete = userDAO.getByID(id);
+        UserDTO tokenUser = ctx.attribute("user");
+
+        if (!tokenUser.getUsername().equals(userToDelete.getUsername())) {
+            ctx.status(403).result("Forbidden you can only delete your own user information");
+        }
+
         if (userToDelete == null) {
             ctx.status(404).result("User not found");
             return;
