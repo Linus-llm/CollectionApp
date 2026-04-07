@@ -115,7 +115,7 @@ public class HibernateConfig {
         props.put("hibernate.connection.url", "jdbc:tc:postgresql:16.2:///test_db");
         props.put("hibernate.archive.autodetection", "hbm,class");
         props.put("hibernate.show_sql", "false");
-        props.put("hibernate.hbm2ddl.auto", "update"); // update for production
+        props.put("hibernate.hbm2ddl.auto", "create-drop");
         return props;
     }
 }

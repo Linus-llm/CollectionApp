@@ -23,6 +23,9 @@ public class IDAOTest {
     private static CollectionDAO collectionDAO;
     private static IDAO<Item> itemDAO;
     private static SecurityDao securityDAO;
+    static User u1;
+    static User u2;
+    static User u3;
     @BeforeAll
     static void setUp() {
         emf = HibernateConfig.getEntityManagerFactoryForTest();
@@ -31,9 +34,9 @@ public class IDAOTest {
         itemDAO = new ItemDAO(emf);
         securityDAO = new SecurityDao(emf);
 
-        User u1 = securityDAO.createUser("Testusername", "1234556", "Test@email");
-        User u2 = securityDAO.createUser("Testusername2", "1234552", "Test@email2");
-        User u3 = securityDAO.createUser("Testusername3", "1234556", "Test@email3");
+         u1 = securityDAO.createUser("Testusername", "1234556", "Test@email");
+         u2 = securityDAO.createUser("Testusername2", "1234552", "Test@email2");
+         u3 = securityDAO.createUser("Testusername3", "1234556", "Test@email3");
 
         // Collections (each belongs to exactly one user, per your current mapping)
         Collection c1 = new Collection(u1, "Games", "My video game library", LocalDateTime.now().minusDays(10));
@@ -94,45 +97,48 @@ public class IDAOTest {
 
     @Test
     void getUserById() {
-        securityDAO.createUser("Testusername6", "password", "testemail@dk.dk");
-        User user = userDAO.getByID(4);
+        User createdUser = securityDAO.createUser("Testusername6", "password", "testemail@dk.dk");
+        User user = userDAO.getByID(createdUser.getId());
         assertNotNull(user);
         assertEquals("Testusername6", user.getUsername());
     }
 
     @Test
     void updateUser(){
-        securityDAO.createUser("Testusername", "password", "testemail@dk.dk");
-        User user = userDAO.getByID(1);
+        User createdUser = securityDAO.createUser("Testusername", "password", "testemail@dk.dk");
+        User user = userDAO.getByID(createdUser.getId());
         user.setUsername("UpdatedUsername");
         userDAO.update(user);
-        User updatedUser = userDAO.getByID(1);
+        User updatedUser = userDAO.getByID(user.getId());
         assertNotNull(updatedUser);
         assertEquals("UpdatedUsername", updatedUser.getUsername());
     }
 
     @Test
     void deleteUser(){
-        securityDAO.createUser("Testusername2", "password", "testemail@dk.dk");
-        User founduser = userDAO.getByID(1);
+        User createdUser = securityDAO.createUser("Testusername2", "password", "testemail@dk.dk");
+        User founduser = userDAO.getByID(createdUser.getId());
         userDAO.delete(founduser);
-        User deletedUser = userDAO.getByID(1);
+        User deletedUser = userDAO.getByID(founduser.getId());
         assertNull(deletedUser);
     }
 
     @Test
     void createCollection(){
-        User foundUser = userDAO.getByID(1);
+        User foundUser = userDAO.getByID(u1.getId());
         collectionDAO.create(new Collection(foundUser, "Test Collection", "A collection for testing", LocalDateTime.now()));
-        User foundUser2 = userDAO.getByID(1);
+        User foundUser2 = userDAO.getByID(foundUser.getId());
         Set<Collection> foundUserCollections = foundUser2.getCollections();
         assertNotNull(foundUserCollections.iterator().next());
-        assertEquals("Test Collection", foundUserCollections.iterator().next().getName());
+        assertTrue(
+                foundUserCollections.stream()
+                        .anyMatch(c -> c.getName().equals("Test Collection"))
+        );
     }
 
     @Test
     void getCollectionByName(){
-        User foundUser = userDAO.getByID(1);
+        User foundUser = userDAO.getByID(u1.getId());
         Collection foundCollection = collectionDAO.getByName("Games", foundUser);
         assertNotNull(foundCollection);
         assertEquals("Games", foundCollection.getName());
@@ -140,7 +146,7 @@ public class IDAOTest {
 
     @Test
     void createItem(){
-        Collection c1 = collectionDAO.getByName("Games", userDAO.getByID(1));
+        Collection c1 = collectionDAO.getByName("Games", userDAO.getByID(u1.getId()));
         itemDAO.create(new Item("test", "Physical copy", LocalDateTime.now().minusDays(3),
                 ItemType.VIDEO_GAME, 2023, ItemStatus.BORROWED, ItemCondition.GOOD,c1));
         assertNotNull(c1.getItems());
