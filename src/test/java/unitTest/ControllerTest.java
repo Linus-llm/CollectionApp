@@ -268,7 +268,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Johannes",
               "email": "test@dk",
               "password": "password"
             }
@@ -283,7 +283,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Johannes",
               "password": "password"
             }
             """)
@@ -317,7 +317,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
         {
-          "username": "John",
+          "username": "Per",
           "email": "test@dk",
           "password": "password"
          
@@ -338,7 +338,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
         {
-          "username": "John",
+          "username": "Jon",
           "email": "test@dk",
           "password": "password"
          
@@ -354,12 +354,12 @@ public class ControllerTest {
 
         given().contentType("application/json").body("""
         {
-          "username": "John",
+          "username": "Jon",
           "password": "password"
          
   
     }"""
-        ).when().post("/auth/login").then().log().all().statusCode(200).body("username", equalTo("John"));
+        ).when().post("/auth/login").then().log().all().statusCode(200).body("username", equalTo("Jon"));
     }
 
     @Test
@@ -391,7 +391,7 @@ public class ControllerTest {
                 .body("""
 
                         {
-              "username": "John",
+              "username": "Mikael",
               "email": "test@dk",
               "password": "password"
             }
@@ -406,7 +406,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Mikael",
               "password": "password"
             }
             """)
@@ -446,7 +446,7 @@ public class ControllerTest {
                 .body("""
 
                         {
-              "username": "John",
+              "username": "Mike",
               "email": "test@dk",
               "password": "password"
             }
@@ -461,7 +461,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Mike",
               "password": "password"
             }
             """)
@@ -522,7 +522,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Eli",
               "email": "test@dk",
               "password": "password"
             }
@@ -536,7 +536,7 @@ public class ControllerTest {
                 .contentType("application/json")
                 .body("""
             {
-              "username": "John",
+              "username": "Eli",
               "password": "password"
             }
             """)

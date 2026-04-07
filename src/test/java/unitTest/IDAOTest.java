@@ -105,7 +105,7 @@ public class IDAOTest {
 
     @Test
     void updateUser(){
-        User createdUser = securityDAO.createUser("Testusername", "password", "testemail@dk.dk");
+        User createdUser = securityDAO.createUser("Testusername4", "password", "testemail@dk.dk");
         User user = userDAO.getByID(createdUser.getId());
         user.setUsername("UpdatedUsername");
         userDAO.update(user);
@@ -116,7 +116,7 @@ public class IDAOTest {
 
     @Test
     void deleteUser(){
-        User createdUser = securityDAO.createUser("Testusername2", "password", "testemail@dk.dk");
+        User createdUser = securityDAO.createUser("Testusername5", "password", "testemail@dk.dk");
         User founduser = userDAO.getByID(createdUser.getId());
         userDAO.delete(founduser);
         User deletedUser = userDAO.getByID(founduser.getId());
