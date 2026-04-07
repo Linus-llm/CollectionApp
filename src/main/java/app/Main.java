@@ -67,11 +67,11 @@ public class Main {
         //BOOKS (item)
         app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection,Role.USER);
 
-        userDAO.create(new User("test@test.dk", "test", "testName"));
-        BookService.saveBookChoiceToDatabase("Harry Potter", 1);
-        for(Item i: itemDAO.getAll()){
-            System.out.println(i.name);
-        }
+        //userDAO.create(new User("test@test.dk", "test", "testName"));
+        //BookService.saveBookChoiceToDatabase("Harry Potter", 1);
+        //for(Item i: itemDAO.getAll()){
+        //    System.out.println(i.name);
+        //}
         //trigger
 
     }
