@@ -72,6 +72,7 @@ public class Main {
         for(Item i: itemDAO.getAll()){
             System.out.println(i.name);
         }
+        //trigger
 
     }
 }
