@@ -1,6 +1,7 @@
 package app.security;
 
 import app.config.HibernateConfig;
+import app.daos.UserDAO;
 import app.entities.User;
 import app.exceptions.ValidationException;
 import jakarta.persistence.EntityManager;
@@ -8,9 +9,11 @@ import jakarta.persistence.EntityManagerFactory;
 
 public class SecurityDao implements ISecurityDAO{
     EntityManagerFactory emf;
+
     public SecurityDao(EntityManagerFactory emf){
         this.emf = emf;
     }
+    UserDAO userDAO = new UserDAO(emf);
 
     @Override
     public User getVerifiedUser(String username, String password) throws ValidationException {
@@ -31,6 +34,7 @@ public class SecurityDao implements ISecurityDAO{
     @Override
     public User createUser(String username, String password, String email) {
         try(EntityManager em = emf.createEntityManager()){
+
             User user = new User(username, password, email);
             UserRole userRole = em.find(UserRole.class, "user");
             em.getTransaction().begin();
@@ -43,6 +47,8 @@ public class SecurityDao implements ISecurityDAO{
 
             em.getTransaction().commit();
             return user;
+        } catch (Exception e) {
+            throw new ValidationException("Username already exists");
         }
     }
 

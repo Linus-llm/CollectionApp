@@ -50,18 +50,25 @@ public class SecurityController implements ISecurityController {
 
     @Override
     public void register(Context ctx) {
+        try {
+            User user = ctx.bodyAsClass(User.class);
+            if (user == null || user.getUsername() == null || user.getPassword() == null || user.getEmail() == null) {
+                ctx.status(400).result("Username, password and email are required");
+                return;
+            }
+            User createdUser = securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
+            ObjectNode response = mapper.createObjectNode();
+            response.put("msg", "User registered");
+            response.put("id", createdUser.getId());
+            response.put("username", createdUser.getUsername());
+            ctx.json(response).status(201);
+        } catch (ValidationException e) {
 
-        User user = ctx.bodyAsClass(User.class);
-        if(user == null || user.getUsername() == null || user.getPassword() == null || user.getEmail() == null ){
-            ctx.status(400).result("Username, password and email are required");
-            return;
+            ObjectNode error = mapper.createObjectNode();
+            error.put("error", e.getMessage());
+
+            ctx.status(400).json(error);
         }
-        User createdUser = securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
-        ObjectNode response = mapper.createObjectNode();
-        response.put("msg", "User registered");
-        response.put("id", createdUser.getId());
-        response.put("username", createdUser.getUsername());
-        ctx.json(response).status(201);
     }
 
     @Override

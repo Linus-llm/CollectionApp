@@ -22,7 +22,7 @@ public class User implements ISecurityUser {
     private int id;
     private String email;
     private String password;
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
     @ManyToMany(fetch = FetchType.EAGER)
     Set<UserRole> roles = new HashSet<>();
