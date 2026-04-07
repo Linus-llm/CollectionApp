@@ -1,5 +1,6 @@
 package app.utils;
 
+import app.Main;
 import app.config.HibernateConfig;
 import app.daos.BookDAO;
 import app.daos.CollectionDAO;
@@ -28,7 +29,9 @@ import java.util.concurrent.*;
 public class BookService {
     private static HttpClient client = HttpClient.newHttpClient();
     private static ObjectMapper om = new ObjectMapper();
-    private static String getDataFromApiJson(String url) {
+
+
+    /*private static String getDataFromApiJson(String url) {
         String bodyText = null;
         try{
             HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).version(HttpClient.Version.HTTP_1_1).GET().build();
@@ -42,7 +45,8 @@ public class BookService {
                 throw new RuntimeException(e);
             }
         return bodyText;
-    }
+    }*/
+
     private static String getDataFromApiJsonWithHeader(String url) {
         String bodyText = null;
         try{
@@ -119,7 +123,7 @@ public class BookService {
         }
 
         //find user
-        UserDAO userDAO = new UserDAO(HibernateConfig.getEntityManagerFactory());
+        UserDAO userDAO = new UserDAO(Main.emf);
 
         User user = userDAO.getByID(userId);
 
@@ -129,8 +133,8 @@ public class BookService {
         //create new collection or add to existing collection
         Collection collection;
 
-        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
-        CollectionDAO collectionDAO = new CollectionDAO(emf);
+
+        CollectionDAO collectionDAO = new CollectionDAO(Main.emf);
         System.out.println("Do you want to add the book to an existing collection or create a new one? (existing/new): ");
         String collectionChoice = scanner.nextLine();
         if (collectionChoice.equalsIgnoreCase("existing")) {
@@ -149,8 +153,8 @@ public class BookService {
 
 
 
-        // Here you would add code to save the BookDTO to your database using your DAO layer.
-        BookDAO bookDAO = new BookDAO(emf);
+
+        BookDAO bookDAO = new BookDAO(Main.emf);
 
         // DESCRIPTION
         System.out.print("Enter description: ");
