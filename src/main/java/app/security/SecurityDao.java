@@ -9,11 +9,10 @@ import jakarta.persistence.EntityManagerFactory;
 
 public class SecurityDao implements ISecurityDAO{
     EntityManagerFactory emf;
-
     public SecurityDao(EntityManagerFactory emf){
         this.emf = emf;
     }
-    UserDAO userDAO = new UserDAO(emf);
+
 
     @Override
     public User getVerifiedUser(String username, String password) throws ValidationException {
