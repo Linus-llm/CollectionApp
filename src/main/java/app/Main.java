@@ -33,7 +33,7 @@ public class Main {
         CollectionDAO collectionDAO = new CollectionDAO(emf);
         UserDAO userDAO = new UserDAO(emf);
 
-        ItemController itemController = new ItemController(itemDAO, bookDAO, collectionDAO);
+        ItemController itemController = new ItemController(itemDAO, bookDAO, collectionDAO, userDAO);
         CollectionController collectionController = new CollectionController(userDAO, collectionDAO);
         UserController userController = new UserController(userDAO);
 

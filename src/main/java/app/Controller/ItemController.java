@@ -3,13 +3,12 @@ package app.Controller;
 import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
+import app.daos.UserDAO;
 import app.dtos.BookRequestDTO;
 import app.dtos.ItemRequestDTO;
-import app.entities.Book;
-import app.entities.Collection;
-import app.entities.Item;
-import app.entities.ItemType;
+import app.entities.*;
 import app.utils.BookService;
+import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -22,12 +21,14 @@ public class ItemController {
     private final ItemDAO itemDAO;
     private final BookDAO bookDAO;
     private final CollectionDAO collectionDAO;
+    private final UserDAO userDAO;
 
 
-    public ItemController(ItemDAO itemDAO, BookDAO bookDAO, CollectionDAO collectionDAO) {
+    public ItemController(ItemDAO itemDAO, BookDAO bookDAO, CollectionDAO collectionDAO, UserDAO userDAO) {
         this.itemDAO = itemDAO;
         this.bookDAO = bookDAO;
         this.collectionDAO = collectionDAO;
+        this.userDAO = userDAO;
     }
 
 
@@ -35,10 +36,18 @@ public class ItemController {
         int collectionId = Integer.parseInt(ctx.pathParam("collectionId"));
         Collection collection = collectionDAO.getByID(collectionId);
 
+
+
         if (collection == null) {
             ctx.status(404).result("Collection not found");
             return;
         }
+
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = collection.getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         Set<ItemRequestDTO> dtoSet = collection.getItems().stream()
                 .map(item -> new ItemRequestDTO(
@@ -67,6 +76,13 @@ public class ItemController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = item.getCollection().getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
+
         ctx.json(new ItemRequestDTO(
                 item.getId(),
                 item.getName(),
@@ -88,6 +104,12 @@ public class ItemController {
             ctx.status(404).result("Item not found");
             return;
         }
+
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = existingItem.getCollection().getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         Item received = ctx.bodyAsClass(Item.class);
 
@@ -131,6 +153,12 @@ public class ItemController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = itemToDelete.getCollection().getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
         itemDAO.delete(itemToDelete);
         ctx.status(200).result("Item with id " + itemId + " deleted");
     }
@@ -149,6 +177,12 @@ public class ItemController {
             ctx.status(404).result("Collection not found");
             return;
         }
+
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = collection.getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         BookRequestDTO received = ctx.bodyAsClass(BookRequestDTO.class);
 
@@ -191,6 +225,14 @@ public class ItemController {
                 newBook.getCondition(),
                 newBook.getCollection().getId()
         ));
+    }
+
+    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+        if (!tokenUser.getUsername().equals(ownerUsername)) {
+            ctx.status(403).json("Forbidden not your own information");
+            return false;
+        }
+        return true;
     }
 
 }

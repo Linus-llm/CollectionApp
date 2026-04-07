@@ -7,6 +7,7 @@ import app.daos.UserDAO;
 import app.dtos.CollectionRequestDTO;
 import app.entities.Collection;
 import app.entities.User;
+import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -34,6 +35,12 @@ public class CollectionController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = user;
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
         Set<Collection> collections = user.getCollections();
 
         Set<CollectionRequestDTO> dtoSet = collections.stream()
@@ -52,6 +59,12 @@ public class CollectionController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = collection.getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
         ctx.json(new CollectionRequestDTO(
                 collection.getId(),
                 collection.getName(),
@@ -67,6 +80,12 @@ public class CollectionController {
             ctx.status(404).result("User not found");
             return;
         }
+
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = user;
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         Collection received = ctx.bodyAsClass(Collection.class);
 
@@ -102,6 +121,12 @@ public class CollectionController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = existingCollection.getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
         Collection received = ctx.bodyAsClass(Collection.class);
 
         if (received.getName() != null) {
@@ -129,8 +154,22 @@ public class CollectionController {
             return;
         }
 
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = collectionToDelete.getUser();
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
         collectionDAO.delete(collectionToDelete);
         ctx.status(200).result("Collection with id " + collectionId + " deleted");
+    }
+
+    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+        if (!tokenUser.getUsername().equals(ownerUsername)) {
+            ctx.status(403).json("Forbidden not your own information");
+            return false;
+        }
+        return true;
     }
 
 }

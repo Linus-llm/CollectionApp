@@ -36,7 +36,7 @@ public class ControllerTest {
     static UserDAO userDAO = new UserDAO(emf);
     static CollectionDAO collectionDAO = new CollectionDAO(emf);
     static BookDAO bookDAO = new BookDAO(emf);
-    static ItemController itemController = new ItemController(itemDAO, bookDAO, collectionDAO);
+    static ItemController itemController = new ItemController(itemDAO, bookDAO, collectionDAO, userDAO);
     static CollectionController collectionController = new CollectionController(userDAO, collectionDAO);
     static UserController userController = new UserController(userDAO);
     static SecurityController securityController = new SecurityController();

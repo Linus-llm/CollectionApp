@@ -53,9 +53,7 @@ public class UserController {
 
         User existingUser = userDAO.getByID(id);
 
-        if (!tokenUser.getUsername().equals(existingUser.getUsername())) {
-            ctx.status(403).result("Forbidden you can only update your own user information");
-        }
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         if (existingUser == null){
             ctx.status(404).result("User not found");
@@ -88,9 +86,7 @@ public class UserController {
         User userToDelete = userDAO.getByID(id);
         UserDTO tokenUser = ctx.attribute("user");
 
-        if (!tokenUser.getUsername().equals(userToDelete.getUsername())) {
-            ctx.status(403).result("Forbidden you can only delete your own user information");
-        }
+        if(!checkOwnership(ctx, tokenUser, userToDelete.getUsername())) return;
 
         if (userToDelete == null) {
             ctx.status(404).result("User not found");
@@ -98,5 +94,13 @@ public class UserController {
         }
         userDAO.delete(userToDelete);
         ctx.status(200).result("User with id " + id + " deleted");
+    }
+
+    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+        if (!tokenUser.getUsername().equals(ownerUsername)) {
+            ctx.status(403).json("Forbidden not your own information");
+            return false;
+        }
+        return true;
     }
 }
