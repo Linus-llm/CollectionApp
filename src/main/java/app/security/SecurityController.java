@@ -133,15 +133,19 @@ public class SecurityController implements ISecurityController {
 
     private static String getToken(Context ctx) {
         String header = ctx.header("Authorization");
-        if (header == null) {
-            throw new UnauthorizedResponse("Authorization header is missing"); // UnauthorizedResponse is javalin 6 specific but response is not json!
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            throw new UnauthorizedResponse("Authorization header is missing");
         }
 
-        // If the Authorization Header was malformed, then no entry
-        String token = header.split(" ")[1];
-        if (token == null) {
-            throw new UnauthorizedResponse("Authorization header is malformed"); // UnauthorizedResponse is javalin 6 specific but response is not json!
+        String[] parts = header.split(" ");
+
+        if (parts.length < 2 || parts[1].isEmpty()) {
+            throw new UnauthorizedResponse("Authorization header is malformed");
         }
+
+        String token = parts[1];
+
         return token;
     }
     private boolean isOpenEndpoint(Set<String> allowedRoles) {
