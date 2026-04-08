@@ -8,6 +8,7 @@ import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.ApiResponseDTO;
 import app.entities.Collection;
 import app.entities.User;
 import app.security.Role;
@@ -301,7 +302,8 @@ public class ControllerTest {
                 .get("/collection/999")
                 .then()
                 .statusCode(404)
-                .body(equalTo("Collection not found"));
+                .body("status", equalTo(404))
+                .body("message", equalTo("Collection not found"));
     }
 
     //------------------------------------------
@@ -472,6 +474,7 @@ public class ControllerTest {
                 .extract()
                 .path("token");
 
+        System.out.println(token);
 
         // 3. create collections for user John with token
 
@@ -554,7 +557,8 @@ public class ControllerTest {
                 .get("/collection/999")
                 .then()
                 .statusCode(404)
-                .body(equalTo("Collection not found"));
+                .body("status", equalTo(404))
+                .body("message", equalTo("Collection not found"));
     }
 
 

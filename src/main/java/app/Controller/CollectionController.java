@@ -95,7 +95,7 @@ public class CollectionController {
         newCollection.setCreatedAt(LocalDateTime.now());
         newCollection.setUser(user);
 
-        user.getCollections().add(newCollection);
+
 
         collectionDAO.create(newCollection);
 
