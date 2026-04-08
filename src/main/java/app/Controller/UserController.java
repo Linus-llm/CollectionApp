@@ -4,6 +4,7 @@ import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.ApiResponseDTO;
 import app.dtos.UserRequestDTO;
 import app.entities.User;
 import app.exceptions.ApiException;
@@ -39,7 +40,7 @@ public class UserController {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User user = userDAO.getByID(id);
         if (user == null){
-            ctx.status(404).result("User not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
             return;
         }
 
@@ -53,52 +54,52 @@ public class UserController {
 
         User existingUser = userDAO.getByID(id);
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
-
         if (existingUser == null){
-            ctx.status(404).result("User not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
             return;
         }
-        User received = ctx.bodyAsClass(User.class);
-        if (received.getUsername() == null) {
-            received.setUsername(existingUser.getUsername());
-            existingUser.setUsername(received.getUsername());
-        } else {
+
+        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+
+
+        UserRequestDTO received = ctx.bodyAsClass(UserRequestDTO.class);
+
+        if (received.getUsername() != null) {
             existingUser.setUsername(received.getUsername());
         }
-        if (received.getEmail() == null) {
-            received.setEmail(existingUser.getEmail());
-            existingUser.setEmail(received.getEmail());
-        } else {
+
+        if (received.getEmail() != null) {
             existingUser.setEmail(received.getEmail());
         }
-        if (received.getPassword() == null) {
-            received.setPassword(existingUser.getPassword());
-            existingUser.setPassword(received.getPassword());
-        } else {
+
+        if (received.getPassword() != null) {
             existingUser.setPassword(received.getPassword());
         }
-        userDAO.update(existingUser);
-        ctx.json(new UserRequestDTO(existingUser.getUsername(), existingUser.getEmail()));
+
+        User updatedUser = userDAO.update(existingUser);
+
+        ctx.json(new UserRequestDTO(updatedUser.getUsername(), updatedUser.getEmail()));
     }
     public void handleDeleteUser(Context ctx) {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User userToDelete = userDAO.getByID(id);
         UserDTO tokenUser = ctx.attribute("user");
 
-        if(!checkOwnership(ctx, tokenUser, userToDelete.getUsername())) return;
-
         if (userToDelete == null) {
-            ctx.status(404).result("User not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
             return;
         }
+
+        if(!checkOwnership(ctx, tokenUser, userToDelete.getUsername())) return;
+
+
         userDAO.delete(userToDelete);
-        ctx.status(200).result("User with id " + id + " deleted");
+        ctx.status(204).json(new ApiResponseDTO(204, "User with id " + id + " deleted"));
     }
 
     private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json("Forbidden not your own information");
+            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
             return false;
         }
         return true;
