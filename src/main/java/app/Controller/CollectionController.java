@@ -1,9 +1,8 @@
 package app.Controller;
 
-import app.daos.BookDAO;
 import app.daos.CollectionDAO;
-import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.ApiResponseDTO;
 import app.dtos.CollectionRequestDTO;
 import app.entities.Collection;
 import app.entities.User;
@@ -31,15 +30,13 @@ public class CollectionController {
         User user = userDAO.getByID(userId);
 
         if (user == null) {
-            ctx.status(404).result("User not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
             return;
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
-        User existingUser = user;
-
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        if(!checkOwnership(ctx, tokenUser, user.getUsername())) return;
 
         Set<Collection> collections = user.getCollections();
 
@@ -55,7 +52,7 @@ public class CollectionController {
         Collection collection = collectionDAO.getByID(collectionId);
 
         if (collection == null) {
-            ctx.status(404).result("Collection not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
             return;
         }
 
@@ -77,20 +74,18 @@ public class CollectionController {
         User user = userDAO.getByID(userId);
 
         if (user == null) {
-            ctx.status(404).result("User not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
             return;
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
-        User existingUser = user;
+        if(!checkOwnership(ctx, tokenUser, user.getUsername())) return;
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
-
-        Collection received = ctx.bodyAsClass(Collection.class);
+        CollectionRequestDTO received = ctx.bodyAsClass(CollectionRequestDTO.class);
 
         if (received.getName() == null || received.getName().isBlank()) {
-            ctx.status(400).result("Collection name is required");
+            ctx.status(400).json(new ApiResponseDTO(400, "Collection name is required"));
             return;
         }
 
@@ -117,7 +112,7 @@ public class CollectionController {
         Collection existingCollection = collectionDAO.getByID(collectionId);
 
         if (existingCollection == null) {
-            ctx.status(404).result("Collection not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
             return;
         }
 
@@ -127,7 +122,7 @@ public class CollectionController {
 
         if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
-        Collection received = ctx.bodyAsClass(Collection.class);
+        CollectionRequestDTO received = ctx.bodyAsClass(CollectionRequestDTO.class);
 
         if (received.getName() != null) {
             existingCollection.setName(received.getName());
@@ -150,7 +145,7 @@ public class CollectionController {
         Collection collectionToDelete = collectionDAO.getByID(collectionId);
 
         if (collectionToDelete == null) {
-            ctx.status(404).result("Collection not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
             return;
         }
 
@@ -161,12 +156,12 @@ public class CollectionController {
         if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         collectionDAO.delete(collectionToDelete);
-        ctx.status(200).result("Collection with id " + collectionId + " deleted");
+        ctx.status(204).json(new ApiResponseDTO(204, "Collection with id " + collectionId + " deleted"));
     }
 
     private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json("Forbidden not your own information");
+            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
             return false;
         }
         return true;
