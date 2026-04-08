@@ -4,6 +4,7 @@ import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.ApiResponseDTO;
 import app.dtos.BookRequestDTO;
 import app.dtos.ItemRequestDTO;
 import app.entities.*;
@@ -39,7 +40,7 @@ public class ItemController {
 
 
         if (collection == null) {
-            ctx.status(404).result("Collection not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
             return;
         }
 
@@ -72,7 +73,7 @@ public class ItemController {
         Item item = itemDAO.getByID(itemId);
 
         if (item == null) {
-            ctx.status(404).result("Item not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
             return;
         }
 
@@ -101,7 +102,7 @@ public class ItemController {
         Item existingItem = itemDAO.getByID(itemId);
 
         if (existingItem == null) {
-            ctx.status(404).result("Item not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
             return;
         }
 
@@ -111,7 +112,7 @@ public class ItemController {
 
         if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
-        Item received = ctx.bodyAsClass(Item.class);
+        ItemRequestDTO received = ctx.bodyAsClass(ItemRequestDTO.class);
 
         if (received.getName() != null && !received.getName().isBlank()) {
             existingItem.setName(received.getName());
@@ -149,7 +150,7 @@ public class ItemController {
         Item itemToDelete = itemDAO.getByID(itemId);
 
         if (itemToDelete == null) {
-            ctx.status(404).result("Item not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
             return;
         }
 
@@ -160,7 +161,7 @@ public class ItemController {
         if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
 
         itemDAO.delete(itemToDelete);
-        ctx.status(200).result("Item with id " + itemId + " deleted");
+        ctx.status(204).json(new ApiResponseDTO(204, "Item with id " + itemId + " deleted"));
     }
     //--------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------
@@ -174,7 +175,7 @@ public class ItemController {
         Collection collection = collectionDAO.getByID(collectionId);
 
         if (collection == null) {
-            ctx.status(404).result("Collection not found");
+            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
             return;
         }
 
@@ -187,17 +188,17 @@ public class ItemController {
         BookRequestDTO received = ctx.bodyAsClass(BookRequestDTO.class);
 
         if (received.getTitle() == null || received.getTitle().isBlank()) {
-            ctx.status(400).result("Book title is required");
+            ctx.status(400).json(new ApiResponseDTO(400, "Book title is required"));
             return;
         }
 
         if (received.getAuthors() == null || received.getAuthors().isEmpty()) {
-            ctx.status(400).result("At least one author is required");
+            ctx.status(400).json(new ApiResponseDTO(400, "At least one author is required"));
             return;
         }
 
         if (received.getStatus() == null || received.getCondition() == null) {
-            ctx.status(400).result("Status and condition are required");
+            ctx.status(400).json(new ApiResponseDTO(400, "Status and condition are required"));
             return;
         }
 
@@ -229,7 +230,7 @@ public class ItemController {
 
     private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json("Forbidden not your own information");
+            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
             return false;
         }
         return true;
