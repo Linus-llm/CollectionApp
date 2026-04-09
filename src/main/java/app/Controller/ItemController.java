@@ -8,6 +8,8 @@ import app.dtos.ApiResponseDTO;
 import app.dtos.BookRequestDTO;
 import app.dtos.ItemRequestDTO;
 import app.entities.*;
+import app.exceptions.ApiException;
+import app.exceptions.ValidationException;
 import app.utils.BookService;
 import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
@@ -40,15 +42,15 @@ public class ItemController {
 
 
         if (collection == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
-            return;
+            throw new ApiException(404, "Collection not found");
+
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = collection.getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         Set<ItemRequestDTO> dtoSet = collection.getItems().stream()
                 .map(item -> new ItemRequestDTO(
@@ -73,15 +75,14 @@ public class ItemController {
         Item item = itemDAO.getByID(itemId);
 
         if (item == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
-            return;
+            throw new ApiException(404, "Item not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = item.getCollection().getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
 
         ctx.json(new ItemRequestDTO(
@@ -102,15 +103,14 @@ public class ItemController {
         Item existingItem = itemDAO.getByID(itemId);
 
         if (existingItem == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
-            return;
+            throw new ApiException(404, "Item not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = existingItem.getCollection().getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         ItemRequestDTO received = ctx.bodyAsClass(ItemRequestDTO.class);
 
@@ -150,15 +150,14 @@ public class ItemController {
         Item itemToDelete = itemDAO.getByID(itemId);
 
         if (itemToDelete == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Item not found"));
-            return;
+            throw new ApiException(404, "Item not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = itemToDelete.getCollection().getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         itemDAO.delete(itemToDelete);
         ctx.status(204).json(new ApiResponseDTO(204, "Item with id " + itemId + " deleted"));
@@ -175,31 +174,27 @@ public class ItemController {
         Collection collection = collectionDAO.getByID(collectionId);
 
         if (collection == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
-            return;
+            throw new ApiException(404, "Collection not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = collection.getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         BookRequestDTO received = ctx.bodyAsClass(BookRequestDTO.class);
 
         if (received.getTitle() == null || received.getTitle().isBlank()) {
-            ctx.status(400).json(new ApiResponseDTO(400, "Book title is required"));
-            return;
+            throw new ValidationException("Book title is required");
         }
 
         if (received.getAuthors() == null || received.getAuthors().isEmpty()) {
-            ctx.status(400).json(new ApiResponseDTO(400, "At least one author is required"));
-            return;
+            throw new ValidationException("At least one author is required");
         }
 
         if (received.getStatus() == null || received.getCondition() == null) {
-            ctx.status(400).json(new ApiResponseDTO(400, "Status and condition are required"));
-            return;
+            throw new ValidationException("Status and condition are required");
         }
 
         Book newBook = new Book();
@@ -228,12 +223,10 @@ public class ItemController {
         ));
     }
 
-    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+    private void checkOwnership(UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
-            return false;
+            throw new ApiException(403, "Forbidden: not your resource");
         }
-        return true;
     }
 
 }

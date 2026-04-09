@@ -11,6 +11,8 @@ import app.daos.UserDAO;
 import app.dtos.ApiResponseDTO;
 import app.entities.Collection;
 import app.entities.User;
+import app.exceptions.ApiException;
+import app.exceptions.ValidationException;
 import app.security.Role;
 import app.security.SecurityController;
 import app.security.SecurityDao;
@@ -50,6 +52,18 @@ public class ControllerTest {
             config.showJavalinBanner = false;
         }).start(7070).beforeMatched(securityController::authenticate)
                 .beforeMatched(securityController::authorize);;
+
+        app.exception(ApiException.class, (e, ctx) -> {
+            ctx.status(e.getCode()).json(new ApiResponseDTO(e.getCode(), e.getMessage()));
+        });
+        app.exception(ValidationException.class, (e, ctx) -> {
+            ctx.status(400).json(new ApiResponseDTO(400, e.getMessage()));
+        });
+        app.exception(Exception.class, (e, ctx) -> {
+            e.printStackTrace();
+            ctx.status(500).json(new ApiResponseDTO(500, e.getClass().getSimpleName() + ": " + e.getMessage()));
+        });
+
         app.get("/", ctx -> ctx.result("Server running"));
         //USER
         app.get("/api/user", userController::handleGetUsers, Role.USER);

@@ -40,8 +40,7 @@ public class UserController {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User user = userDAO.getByID(id);
         if (user == null){
-            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
-            return;
+            throw new ApiException(404, "User not found");
         }
 
         ctx.json(new UserRequestDTO(user.getEmail()));
@@ -55,11 +54,10 @@ public class UserController {
         User existingUser = userDAO.getByID(id);
 
         if (existingUser == null){
-            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
-            return;
+            throw new ApiException(404, "User not found");
         }
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
 
         UserRequestDTO received = ctx.bodyAsClass(UserRequestDTO.class);
@@ -86,22 +84,19 @@ public class UserController {
         UserDTO tokenUser = ctx.attribute("user");
 
         if (userToDelete == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
-            return;
+            throw new ApiException(404, "User not found");
         }
 
-        if(!checkOwnership(ctx, tokenUser, userToDelete.getUsername())) return;
+        checkOwnership(tokenUser, userToDelete.getUsername());
 
 
         userDAO.delete(userToDelete);
         ctx.status(204).json(new ApiResponseDTO(204, "User with id " + id + " deleted"));
     }
 
-    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+    private void checkOwnership(UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
-            return false;
+            throw new ApiException(403, "Forbidden: not your resource");
         }
-        return true;
     }
 }

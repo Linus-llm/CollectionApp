@@ -5,6 +5,7 @@ import app.entities.Collection;
 import app.entities.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NoResultException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -69,6 +70,8 @@ public class CollectionDAO implements IDAO<Collection> {
             return em.createQuery("SELECT c FROM Collection c WHERE c.name = :name AND c.user.username = :username", Collection.class)
                     .setParameter("name", name).setParameter("username", user.getUsername())
                     .getSingleResult();
+        } catch (NoResultException e){
+            return null;
         }
     }
 }

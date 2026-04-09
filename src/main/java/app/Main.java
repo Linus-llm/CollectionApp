@@ -7,8 +7,11 @@ import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.ApiResponseDTO;
 import app.entities.Item;
 import app.entities.User;
+import app.exceptions.ApiException;
+import app.exceptions.ValidationException;
 import app.security.Role;
 import app.security.SecurityController;
 import app.utils.BookService;
@@ -24,6 +27,20 @@ public class Main {
         Javalin app = Javalin.create(config -> {config.showJavalinBanner = false;}).start(7070)
                 .beforeMatched(securityController::authenticate)
                 .beforeMatched(securityController::authorize);
+
+
+        app.exception(ApiException.class, (e, ctx) -> {
+            ctx.status(e.getCode()).json(new ApiResponseDTO(e.getCode(), e.getMessage()));
+        });
+        app.exception(ValidationException.class, (e, ctx) -> {
+            ctx.status(400).json(new ApiResponseDTO(400, e.getMessage()));
+        });
+        app.exception(Exception.class, (e, ctx) -> {
+            e.printStackTrace();
+            ctx.status(500).json(new ApiResponseDTO(500, e.getClass().getSimpleName() + ": " + e.getMessage()));
+        });
+
+
 
         ItemDAO itemDAO = new ItemDAO(emf);
         BookDAO bookDAO = new BookDAO(emf);

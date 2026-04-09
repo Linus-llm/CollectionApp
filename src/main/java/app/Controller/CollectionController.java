@@ -6,6 +6,8 @@ import app.dtos.ApiResponseDTO;
 import app.dtos.CollectionRequestDTO;
 import app.entities.Collection;
 import app.entities.User;
+import app.exceptions.ApiException;
+import app.exceptions.ValidationException;
 import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
@@ -30,13 +32,12 @@ public class CollectionController {
         User user = userDAO.getByID(userId);
 
         if (user == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
-            return;
+            throw new ApiException(404, "User not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
-        if(!checkOwnership(ctx, tokenUser, user.getUsername())) return;
+        checkOwnership(tokenUser, user.getUsername());
 
         Set<Collection> collections = user.getCollections();
 
@@ -52,15 +53,14 @@ public class CollectionController {
         Collection collection = collectionDAO.getByID(collectionId);
 
         if (collection == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
-            return;
+            throw new ApiException(404, "Collection not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = collection.getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         ctx.json(new CollectionRequestDTO(
                 collection.getId(),
@@ -74,19 +74,17 @@ public class CollectionController {
         User user = userDAO.getByID(userId);
 
         if (user == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "User not found"));
-            return;
+            throw new ApiException(404, "User not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
-        if(!checkOwnership(ctx, tokenUser, user.getUsername())) return;
+        checkOwnership(tokenUser, user.getUsername());
 
         CollectionRequestDTO received = ctx.bodyAsClass(CollectionRequestDTO.class);
 
         if (received.getName() == null || received.getName().isBlank()) {
-            ctx.status(400).json(new ApiResponseDTO(400, "Collection name is required"));
-            return;
+            throw new ValidationException("Collection name is required");
         }
 
         Collection newCollection = new Collection();
@@ -94,8 +92,6 @@ public class CollectionController {
         newCollection.setDescription(received.getDescription());
         newCollection.setCreatedAt(LocalDateTime.now());
         newCollection.setUser(user);
-
-
 
         collectionDAO.create(newCollection);
 
@@ -112,15 +108,14 @@ public class CollectionController {
         Collection existingCollection = collectionDAO.getByID(collectionId);
 
         if (existingCollection == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
-            return;
+            throw new ApiException(404, "Collection not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = existingCollection.getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         CollectionRequestDTO received = ctx.bodyAsClass(CollectionRequestDTO.class);
 
@@ -145,26 +140,23 @@ public class CollectionController {
         Collection collectionToDelete = collectionDAO.getByID(collectionId);
 
         if (collectionToDelete == null) {
-            ctx.status(404).json(new ApiResponseDTO(404, "Collection not found"));
-            return;
+            throw new ApiException(404, "Collection not found");
         }
 
         UserDTO tokenUser = ctx.attribute("user");
 
         User existingUser = collectionToDelete.getUser();
 
-        if(!checkOwnership(ctx, tokenUser, existingUser.getUsername())) return;
+        checkOwnership(tokenUser, existingUser.getUsername());
 
         collectionDAO.delete(collectionToDelete);
         ctx.status(204).json(new ApiResponseDTO(204, "Collection with id " + collectionId + " deleted"));
     }
 
-    private boolean checkOwnership(Context ctx, UserDTO tokenUser, String ownerUsername) {
+    private void checkOwnership(UserDTO tokenUser, String ownerUsername) {
         if (!tokenUser.getUsername().equals(ownerUsername)) {
-            ctx.status(403).json(new ApiResponseDTO(403, "Forbidden not your own information"));
-            return false;
+            throw new ApiException(403, "Forbidden: not your resource");
         }
-        return true;
     }
 
 }
