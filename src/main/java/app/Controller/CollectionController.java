@@ -86,6 +86,9 @@ public class CollectionController {
         if (received.getName() == null || received.getName().isBlank()) {
             throw new ValidationException("Collection name is required");
         }
+        if (received.getDescription() == null || received.getDescription().isBlank()) {
+            throw new ValidationException("Collection description is required");
+        }
 
         Collection newCollection = new Collection();
         newCollection.setName(received.getName());
