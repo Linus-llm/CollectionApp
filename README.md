@@ -245,3 +245,31 @@ Response:
   "condition": "XXXX",
   "collectionId": x
 }
+
+---
+
+# User Stories
+
+My most important User Stories:
+
+- As a user, I want to be able to register a user.
+- As a user, I want to log in and receive a token.
+- As system owner, I want to protect API endpoints with roles, so only authorized users can access
+- As a user, I want to create, see, update and delete items, so I can maintain my collection
+- As a user, I want to create, see, update and delete collections, so I can organize my items.
+- As a user, I want to create a book as an item in my collection. 
+
+---
+
+# Development Notes
+
+- Testing the API turned out to be more difficult than I first imagine and I used a significant amount of time doing so, but it brought me a lot of learning and experience.
+- I had a hard time settling on where to take my idea, and I did so late weeks into the project which might have halted how far I have gone. Next time I will use more time planning and being sure on where to take the project.
+- JWT and the whole authentication and authorization part turned out to be really fun and interesting, might be my favourite part of the project.
+
+---
+
+# Things I have not incoporated into the project yet
+
+- Admin role is still missing and still contemplating on what I want to do with it. This means the SecurityDao.createRole and addUserRole is not being used and has not been coded.
+- I have yet to introduce more API's like OpenLibrary into the project
