@@ -73,7 +73,7 @@ I have chosen the OpenLibrary api because it fits my project perfectly, I can ta
 
 # ERD
 
-![ERD](images/ERD portfolio.png)
+![ERD](images/ERD%20portfolio.png)
 
 ---
 
