@@ -266,6 +266,7 @@ My most important User Stories:
 - Testing the API turned out to be more difficult than I first imagine and I used a significant amount of time doing so, but it brought me a lot of learning and experience.
 - I had a hard time settling on where to take my idea, and I did so late weeks into the project which might have halted how far I have gone. Next time I will use more time planning and being sure on where to take the project.
 - JWT and the whole authentication and authorization part turned out to be really fun and interesting, might be my favourite part of the project.
+- In order ot run the Main class make sure that Config.Properties have DB_NAME, DB_USERNAME and DB_PASSWORD.
 
 ---
 
