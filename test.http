@@ -1,6 +1,6 @@
 ### GET request to example server
 @baseUrl = https://collectionapp.viskode.dk
-@token =
+@token = eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJMaW51cyBMb2htYW5uIE1vbGdhYXJkIiwic3ViIjoiVmlkZW9Vc2VyMyIsImV4cCI6MTc3NTgyNzI0OCwicm9sZXMiOiJ1c2VyIiwidXNlcm5hbWUiOiJWaWRlb1VzZXIzIn0.SvQJVkoYRug6C-vzKucS2XITOhL90GpHz2_6S2Ir7kQ
 
 ###
 ### Register
@@ -8,7 +8,7 @@ POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "VideoUser2",
+  "username": "VideoUser3",
   "password": "TestPassword123",
   "email": "test@test.com"
 }
@@ -18,7 +18,7 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "VideoUser2",
+  "username": "VideoUser3",
   "password": "TestPassword123"
 }
 
@@ -35,7 +35,7 @@ GET {{baseUrl}}/api/user/13/collection
 Authorization: Bearer {{token}}
 
 ### Get create collection for user
-POST {{baseUrl}}/api/user/13/collection
+POST {{baseUrl}}/api/user/20/collection
 Authorization: Bearer {{token}}
 
 {
@@ -44,7 +44,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Create book in collection
-POST {{baseUrl}}/api/collection/1/book
+POST {{baseUrl}}/api/collection/2/book
 Authorization: Bearer {{token}}
 
 {
@@ -57,7 +57,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Create item in collection
-POST {{baseUrl}}/api/collection/1/item
+POST {{baseUrl}}/api/collection/2/item
 Authorization: Bearer {{token}}
 
 {

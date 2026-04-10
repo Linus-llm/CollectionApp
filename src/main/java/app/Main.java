@@ -74,6 +74,7 @@ public class Main {
         app.get("/api/collection/{collectionId}/item", itemController::handleGetItemsForCollection,Role.USER);
         app.put("/api/item/{itemId}", itemController::handleUpdateItem,Role.USER);
         app.delete("/api/item/{itemId}", itemController::handleDeleteItem,Role.USER);
+        app.post("/api/collection/{collectionId}/item", itemController::handleCreateItemInCollection,Role.USER);
 
         //BOOKS (item)
         app.post("/api/collection/{collectionId}/book", itemController::handleCreateBookInCollection,Role.USER);
