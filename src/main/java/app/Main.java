@@ -14,7 +14,7 @@ import app.exceptions.ApiException;
 import app.exceptions.ValidationException;
 import app.security.Role;
 import app.security.SecurityController;
-import app.utils.BookService;
+import app.services.BookService;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
 
@@ -76,7 +76,8 @@ public class Main {
         app.delete("/api/item/{itemId}", itemController::handleDeleteItem,Role.USER);
 
         //BOOKS (item)
-        app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection,Role.USER);
+        app.post("/api/collection/{collectionId}/book", itemController::handleCreateBookInCollection,Role.USER);
+
 
         userDAO.create(new User("test@test.dk", "test", "testName"));
         BookService.saveBookChoiceToDatabase("Harry Potter", 1);

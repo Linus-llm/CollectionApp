@@ -1,37 +1,70 @@
+### GET request to example server
+@baseUrl = https://collectionapp.viskode.dk
+@token =
 
-@baseUrl = http://localhost:7070/api
-
-### POST
-POST {{baseUrl}}/user
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTgzOTYwLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.1qKjMhVNU8tdVM-UJZHpQ9NtNeX2R6dOKTr74u1ZRmY
+###
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
 
 {
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "test@dk",
-    "password": "12345678",
-    "phoneNumber": "123456789"
-
+  "username": "VideoUser2",
+  "password": "TestPassword123",
+  "email": "test@test.com"
 }
 
-###
-GET {{baseUrl}}/user
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTg0MDkxLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.AiSWdUUwdsx_I1FjD2sVMvpYK4mhkFwHM7J2HnUHCU4
-
-###
-POST http://localhost:7070/api/auth/register
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
 
 {
-    "username": "user",
-    "password": "test123"
+  "username": "VideoUser2",
+  "password": "TestPassword123"
 }
-###
-POST http://localhost:7070/api/auth/login
+
+### Get all users
+GET {{baseUrl}}/api/user
+Authorization: Bearer {{token}}
+
+### Get user by ID
+GET {{baseUrl}}/api/user/1
+Authorization: Bearer {{token}}
+
+### Get collections for user
+GET {{baseUrl}}/api/user/13/collection
+Authorization: Bearer {{token}}
+
+### Get create collection for user
+POST {{baseUrl}}/api/user/13/collection
+Authorization: Bearer {{token}}
 
 {
-    "username": "user",
-    "password": "test123"
+  "name": "TestCollection",
+  "description": "TestDescription"
 }
-###
-GET http://localhost:7070/api/auth/protected
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJcIlRlc3QgSXNzdWVyXCIiLCJzdWIiOiJ1c2VyIiwiZXhwIjoxNzc0MTg0MDkxLCJyb2xlcyI6InVzZXIiLCJ1c2VybmFtZSI6InVzZXIifQ.AiSWdUUwdsx_I1FjD2sVMvpYK4mhkFwHM7J2HnUHCU4
+
+### Create book in collection
+POST {{baseUrl}}/api/collection/1/book
+Authorization: Bearer {{token}}
+
+{
+   "title": "Sunrise paints the sky",
+   "description": "Sunrise paints the sky, Gentle waves kiss sandy shores, Day awakens slow.",
+   "authors": ["D. Tyrell", "R. Monke"],
+   "releaseYear": 2023,
+   "status": "OWNED",
+   "condition": "GOOD"
+}
+
+### Create item in collection
+POST {{baseUrl}}/api/collection/1/item
+Authorization: Bearer {{token}}
+
+{
+   "name": "Batman",
+   "description": "Play figure of Batman from the 1990s",
+   "releaseYear": 1992,
+   "status": "OWNED",
+   "condition": "GOOD"
+   "type": "COLLECTIBLE"
+}

@@ -10,7 +10,6 @@ import app.dtos.ItemRequestDTO;
 import app.entities.*;
 import app.exceptions.ApiException;
 import app.exceptions.ValidationException;
-import app.utils.BookService;
 import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
@@ -161,6 +160,59 @@ public class ItemController {
 
         itemDAO.delete(itemToDelete);
         ctx.status(204).json(new ApiResponseDTO(204, "Item with id " + itemId + " deleted"));
+    }
+
+
+    public void handleCreateItemInCollection(Context ctx){
+        int collectionId = Integer.parseInt(ctx.pathParam("collectionId"));
+        Collection collection = collectionDAO.getByID(collectionId);
+        if (collection == null) {
+            throw new ApiException(404, "Collection not found");
+        }
+        UserDTO tokenUser = ctx.attribute("user");
+
+        User existingUser = collection.getUser();
+
+        checkOwnership(tokenUser, existingUser.getUsername());
+
+        ItemRequestDTO received = ctx.bodyAsClass(ItemRequestDTO.class);
+
+        if (received.getName() == null || received.getName().isBlank()) {
+            throw new ValidationException("Item name is required");
+        }
+
+        if (received.getType() == null) {
+            throw new ValidationException("Item type is required");
+        }
+
+        if (received.getStatus() == null || received.getCondition() == null) {
+            throw new ValidationException("Status and condition are required");
+        }
+
+        Item newItem = new Item();
+        newItem.setName(received.getName());
+        newItem.setDescription(received.getDescription());
+        newItem.setCollection(collection);
+        newItem.setCreatedAt(LocalDateTime.now());
+        newItem.setReleaseYear(received.getReleaseYear());
+        newItem.setType(received.getType());
+        newItem.setStatus(received.getStatus());
+        newItem.setCondition(received.getCondition());
+
+        itemDAO.create(newItem);
+
+        ctx.status(201).json(new ItemRequestDTO(
+                newItem.getId(),
+                newItem.getName(),
+                newItem.getDescription(),
+                newItem.getCreatedAt(),
+                newItem.getReleaseYear(),
+                newItem.getType(),
+                newItem.getStatus(),
+                newItem.getCondition(),
+                newItem.getCollection().getId()
+        ));
+
     }
     //--------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------

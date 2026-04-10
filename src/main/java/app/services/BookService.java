@@ -1,7 +1,6 @@
-package app.utils;
+package app.services;
 
 import app.Main;
-import app.config.HibernateConfig;
 import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.UserDAO;
@@ -11,7 +10,6 @@ import app.entities.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManagerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -20,10 +18,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.concurrent.*;
 
 public class BookService {

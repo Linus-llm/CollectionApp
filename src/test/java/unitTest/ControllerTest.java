@@ -85,9 +85,11 @@ public class ControllerTest {
         app.get("/api/collection/{collectionId}/item", itemController::handleGetItemsForCollection,Role.USER);
         app.put("/api/item/{itemId}", itemController::handleUpdateItem,Role.USER);
         app.delete("/api/item/{itemId}", itemController::handleDeleteItem,Role.USER);
+        app.post("/api/collection/{collectionId}/item", itemController::handleCreateItemInCollection,Role.USER);
 
         //BOOKS (item)
-        app.post("/api/collection/{collectionId}/item", itemController::handleCreateBookInCollection,Role.USER);
+        app.post("/api/collection/{collectionId}/book", itemController::handleCreateBookInCollection,Role.USER);
+
     }
 
     @AfterAll
@@ -172,7 +174,7 @@ public class ControllerTest {
                 }
                 """)
                 .when()
-                .post("/collection/" + collectionId + "/item")
+                .post("/collection/" + collectionId + "/book")
                 .then()
                 .log().all()
                 .statusCode(201)
@@ -180,6 +182,88 @@ public class ControllerTest {
                 .body("releaseYear", equalTo(2023))
                 .body("collectionId", equalTo(collectionId));
     }
+
+    @Test
+    public void createItemTest() {
+        RestAssured.baseURI = "http://localhost:7070/api";
+
+        // 1. Register user and extract userId
+        int userId = given()
+                .contentType("application/json")
+                .body("""
+                {
+                  "username": "Henrik",
+                  "email": "test@test.dk",
+                  "password": "password123"
+                }
+                """)
+                .when()
+                .post("/auth/register")
+                .then()
+                .statusCode(201)
+                .body("msg", equalTo("User registered"))
+                .extract()
+                .path("id");
+
+        // 2. Login and extract token
+        String token = given()
+                .contentType("application/json")
+                .body("""
+                {
+                  "username": "Henrik",
+                  "password": "password123"
+                }
+                """)
+                .when()
+                .post("/auth/login")
+                .then()
+                .statusCode(200)
+                .body("username", equalTo("Henrik"))
+                .extract()
+                .path("token");
+
+        // 3. Create collection and extract collectionId
+        int collectionId = given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body("""
+                {
+                  "name": "Lars' collection",
+                  "description": "A collection of items"
+                }
+                """)
+                .when()
+                .post("/user/" + userId + "/collection")
+                .then()
+                .statusCode(201)
+                .body("name", equalTo("Lars' collection"))
+                .extract()
+                .path("id");
+
+        // 4. Create item in that collection
+        given()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body("""
+                {
+                  "name": "Superman",
+                  "description": "Superman play figure from 1990s",
+                  "releaseYear": 1992,
+                  "status": "OWNED",
+                  "condition": "GOOD",
+                  "type": "COLLECTIBLE"
+                }
+                """)
+                .when()
+                .post("/collection/" + collectionId + "/item")
+                .then()
+                .log().all()
+                .statusCode(201)
+                .body("name", equalTo("Superman"))
+                .body("releaseYear", equalTo(1992))
+                .body("collectionId", equalTo(collectionId));
+    }
+
 
     @Test
     public void getItemsForCollectionTest(){
@@ -242,7 +326,7 @@ public class ControllerTest {
             }
         """)
                 .when()
-                .post("/collection/"+collectionId+"/item")
+                .post("/collection/"+collectionId+"/book")
                 .then()
                 .statusCode(201);
 
@@ -261,7 +345,7 @@ public class ControllerTest {
             }
         """)
                 .when()
-                .post("/collection/"+collectionId+"/item")
+                .post("/collection/"+collectionId+"/book")
                 .then()
                 .statusCode(201);
 
