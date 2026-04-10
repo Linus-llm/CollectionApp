@@ -13,11 +13,17 @@ https://linus-llm.github.io/portfolio/
 Project overview video:
 https://youtu.be/UKMt0CBDMnY
 
+Project overview video updated:
+https://youtu.be/VBFetYs8JJo
+
 Deployed application: 
 https://collectionapp.viskode.dk/
 
 Source code repository: 
 https://github.com/Linus-llm/CollectionApp
+
+User Stories:
+https://docs.google.com/document/d/1oqn2AmLk_DcwgcQjMemViZKaxjYk5F6qZpMbKdkntn4/edit?usp=sharing
 
 ---
 
@@ -140,6 +146,21 @@ Fields:
 
 # API Documentation
 
+## Overview
+
+Everything is gathered under /api and for my register, login, authorization and authentication that is gathered under /api/auth.
+I have tried to maintain a hierarchy. Most endpoints are protected from other users. See the routes below:
+
+/api/auth/register
+/api/auth/login
+/api/user
+/api/user/{userId} (get, put, delete)
+/api/user/{userId}/collection (get, post)
+/api/collection/{collectionId} (get, put, delete)
+/api/item/{itemId} (get, put, delete)
+/api/collection/{collectionId}/item (get, post)
+/api/collection/{collectionId}/book (post)
+
 ## Example Endpoints
 
 ### Register user
@@ -212,7 +233,7 @@ Response:
 }
 
 ### Create book for collection
-POST {{baseUrl}}/api/collection/{collectionId}/item
+POST {{baseUrl}}/api/collection/{collectionId}/book
 Authorization: Bearer {{token}}
 
 Request body:
@@ -246,6 +267,41 @@ Response:
   "collectionId": x
 }
 
+### Create item for collection
+POST {{baseUrl}}/api/collection/{collectionId}/item
+Authorization: Bearer {{token}}
+
+Request body:
+{
+  "title": "xxx",
+  "description": "xxx",
+  "authors": ["xxx","xxx"],
+  "releaseYear": xxxx,
+  "status": "XXXXX",
+  "condition": "XXXX"
+}
+
+Response:
+{
+  "id": x,
+  "name": "xxx",
+  "description": "xxx",
+  "createdAt": [
+    xxxx,
+    x,
+    xx,
+    xx,
+    x,
+    x,
+    xxxxxx
+  ],
+  "releaseYear": xxxx,
+  "type": "xxxxxx",
+  "status": "xxxx",
+  "condition": "xxxx",
+  "collectionId": x
+}
+
 ---
 
 # User Stories
@@ -258,6 +314,7 @@ My most important User Stories:
 - As a user, I want to create, see, update and delete items, so I can maintain my collection
 - As a user, I want to create, see, update and delete collections, so I can organize my items.
 - As a user, I want to create a book as an item in my collection. 
+- As a user, I want to create an item in my collection.
 
 ---
 

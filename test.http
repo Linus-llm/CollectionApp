@@ -1,6 +1,6 @@
 ### GET request to example server
 @baseUrl = https://collectionapp.viskode.dk
-@token = eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJMaW51cyBMb2htYW5uIE1vbGdhYXJkIiwic3ViIjoiVmlkZW9Vc2VyMyIsImV4cCI6MTc3NTgyNzI0OCwicm9sZXMiOiJ1c2VyIiwidXNlcm5hbWUiOiJWaWRlb1VzZXIzIn0.SvQJVkoYRug6C-vzKucS2XITOhL90GpHz2_6S2Ir7kQ
+@token = eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJMaW51cyBMb2htYW5uIE1vbGdhYXJkIiwic3ViIjoiVmlkZW9Vc2VyMyIsImV4cCI6MTc3NTgyNzc1NCwicm9sZXMiOiJ1c2VyIiwidXNlcm5hbWUiOiJWaWRlb1VzZXIzIn0.52tNIk-D-NhvelRVxsAXN1rqPMJY41QPd2CN3fDcEYw
 
 ###
 ### Register
@@ -65,6 +65,6 @@ Authorization: Bearer {{token}}
    "description": "Play figure of Batman from the 1990s",
    "releaseYear": 1992,
    "status": "OWNED",
-   "condition": "GOOD"
+   "condition": "GOOD",
    "type": "COLLECTIBLE"
 }
