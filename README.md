@@ -47,7 +47,11 @@ The technologies I have used:
 
 The overview: 
 
-Client --> Security Layer (Controller) --> REST (Controllers) --> Persistence layer (DAO's) --> Database 
+
+Client --> Controller (security layer) --> Controllers (REST) --> DAOs (Persistence layer) --> Database 
+--> DAOs (Persistence layer) --> Controllers (REST) --> Client
+
+This below is for my service class it is meant to be like a guide for me when frontend begins.
 
 Developer/User --> Service --> external API --> Service --> Developer/User --> Service --> persistence layer --> database
 
