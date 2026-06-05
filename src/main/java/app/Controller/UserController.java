@@ -4,6 +4,7 @@ import app.daos.BookDAO;
 import app.daos.CollectionDAO;
 import app.daos.ItemDAO;
 import app.daos.UserDAO;
+import app.dtos.AdminUserDTO;
 import app.dtos.ApiResponseDTO;
 import app.dtos.UserRequestDTO;
 import app.entities.User;
@@ -20,7 +21,7 @@ public class UserController {
 
     private final UserDAO userDAO;
 
-    public UserController( UserDAO userDAO) {
+    public UserController(UserDAO userDAO) {
 
         this.userDAO = userDAO;
     }
@@ -44,6 +45,32 @@ public class UserController {
         }
 
         ctx.json(new UserRequestDTO(user.getEmail()));
+    }
+
+    public void handleGetUserByIdAdmin(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("id"));
+        User user = userDAO.getByID(id);
+        if (user == null){
+            throw new ApiException(404, "User not found");
+        }
+
+        ctx.json(new AdminUserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRolesAsStrings()));
+    }
+
+    public void handleGetUserByUsername(Context ctx){
+        //input from frontend
+        String username = ctx.queryParam("username");
+
+        if (username == null || username.isBlank()) {
+            throw new ApiException(400, "Username is required");
+        }
+        //find user by username in database, if not found throw 404
+        User user = userDAO.getByUsername(username);
+
+        if (user == null) {
+            throw new ApiException(404, "User not found");
+        }
+        ctx.json(new AdminUserDTO( user.getId(), user.getUsername(), user.getEmail(), user.getRolesAsStrings()));
     }
 
     public void handleUpdateUser(Context ctx){
@@ -78,6 +105,51 @@ public class UserController {
 
         ctx.json(new UserRequestDTO(updatedUser.getUsername(), updatedUser.getEmail()));
     }
+
+    public void handleAdminUpdateUser(Context ctx) {
+        int id = Integer.parseInt(ctx.pathParam("id"));
+
+        User existingUser = userDAO.getByID(id);
+
+        if (existingUser == null) {
+            throw new ApiException(404, "User not found");
+        }
+
+        UserRequestDTO received = ctx.bodyAsClass(UserRequestDTO.class);
+
+        if (received.getUsername() != null) {
+            existingUser.setUsername(received.getUsername());
+        }
+
+        if (received.getEmail() != null) {
+            existingUser.setEmail(received.getEmail());
+        }
+
+        User updatedUser = userDAO.update(existingUser);
+
+        ctx.json(new AdminUserDTO(
+                updatedUser.getId(),
+                updatedUser.getUsername(),
+                updatedUser.getEmail(),
+                updatedUser.getRolesAsStrings()
+        ));
+    }
+
+    public void handleAdminDeleteUser(Context ctx) {
+        int id = Integer.parseInt(ctx.pathParam("id"));
+
+        User userToDelete = userDAO.getByID(id);
+
+        if (userToDelete == null) {
+            throw new ApiException(404, "User not found");
+        }
+
+        userDAO.delete(userToDelete);
+
+        ctx.status(204);
+    }
+
+
     public void handleDeleteUser(Context ctx) {
         int id = Integer.parseInt(ctx.pathParam("id"));
         User userToDelete = userDAO.getByID(id);

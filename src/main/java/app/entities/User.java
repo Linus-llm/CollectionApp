@@ -38,6 +38,7 @@ public class User implements ISecurityUser {
         this.email = email;
     }
 
+
     @Override
     public Set<String> getRolesAsStrings() {
         return this.roles.stream().map((role)->role.getRoleName()).collect(Collectors.toSet());

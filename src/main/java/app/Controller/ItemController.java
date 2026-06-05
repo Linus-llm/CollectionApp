@@ -7,9 +7,11 @@ import app.daos.UserDAO;
 import app.dtos.ApiResponseDTO;
 import app.dtos.BookRequestDTO;
 import app.dtos.ItemRequestDTO;
+import app.dtos.OpenLibraryDTOresponse;
 import app.entities.*;
 import app.exceptions.ApiException;
 import app.exceptions.ValidationException;
+import app.services.BookService;
 import dk.bugelhartmann.UserDTO;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityManagerFactory;
@@ -273,6 +275,18 @@ public class ItemController {
                 newBook.getCondition(),
                 newBook.getCollection().getId()
         ));
+    }
+
+    public void handleSearchBooks(Context ctx) {
+        String keyword = ctx.queryParam("keyword");
+
+        if (keyword == null || keyword.isBlank()) {
+            throw new ValidationException("Keyword is required");
+        }
+
+        OpenLibraryDTOresponse response = BookService.getListOfBooksByKeyword(keyword);
+
+        ctx.json(response.getDocs());
     }
 
     private void checkOwnership(UserDTO tokenUser, String ownerUsername) {

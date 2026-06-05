@@ -39,7 +39,8 @@ public class SecurityController implements ISecurityController {
 
             ctx.status(200).json(node
                     .put("token", token)
-                    .put("username", foundUser.getUsername()));
+                    .put("username", foundUser.getUsername())
+                    .put("id", foundUser.getId()));
         } catch (ValidationException e) {
             throw new ApiException(401, e.getMessage());
         }
@@ -52,13 +53,45 @@ public class SecurityController implements ISecurityController {
     public void register(Context ctx) {
         try {
             User user = ctx.bodyAsClass(User.class);
-            if (user == null || user.getUsername() == null || user.getPassword() == null || user.getEmail() == null) {
+            if (
+                    user == null ||
+                            user.getUsername() == null || user.getUsername().isBlank() ||
+                            user.getPassword() == null || user.getPassword().isBlank() ||
+                            user.getEmail() == null || user.getEmail().isBlank()
+            ) {
                 ctx.status(400).result("Username, password and email are required");
                 return;
             }
             User createdUser = securityDAO.createUser(user.getUsername(), user.getPassword(), user.getEmail());
             ObjectNode response = mapper.createObjectNode();
             response.put("msg", "User registered");
+            response.put("id", createdUser.getId());
+            response.put("username", createdUser.getUsername());
+            ctx.json(response).status(201);
+        } catch (ValidationException e) {
+
+            ObjectNode error = mapper.createObjectNode();
+            error.put("error", e.getMessage());
+
+            ctx.status(400).json(error);
+        }
+    }
+
+    public void adminRegister(Context ctx){
+        try {
+            User user = ctx.bodyAsClass(User.class);
+            if (
+                    user == null ||
+                            user.getUsername() == null || user.getUsername().isBlank() ||
+                            user.getPassword() == null || user.getPassword().isBlank() ||
+                            user.getEmail() == null || user.getEmail().isBlank()
+            ) {
+                ctx.status(400).result("Username, password and email are required");
+                return;
+            }
+            User createdUser = securityDAO.createAdminUser(user.getUsername(), user.getPassword(), user.getEmail());
+            ObjectNode response = mapper.createObjectNode();
+            response.put("msg", "Admin user registered");
             response.put("id", createdUser.getId());
             response.put("username", createdUser.getUsername());
             ctx.json(response).status(201);

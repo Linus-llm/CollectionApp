@@ -20,4 +20,5 @@ public class UserRequestDTO {
         this.username = username;
         this.email = email;
     }
+
 }

@@ -51,6 +51,26 @@ public class SecurityDao implements ISecurityDAO{
         }
     }
 
+    public User createAdminUser(String username, String password, String email){
+        try(EntityManager em = emf.createEntityManager()){
+
+            User user = new User(username, password, email);
+            UserRole userRole = em.find(UserRole.class, "admin");
+            em.getTransaction().begin();
+            if(userRole == null){
+                userRole = new UserRole("admin");
+                em.persist(userRole);
+            }
+            user.addRole(userRole);
+            em.persist(user);
+
+            em.getTransaction().commit();
+            return user;
+        } catch (Exception e) {
+            throw new ValidationException("Username already exists");
+        }
+    }
+
     @Override
     public UserRole createRole(String role) {
         return null;

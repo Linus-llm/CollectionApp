@@ -39,6 +39,17 @@ public class UserDAO implements IDAO<User> {
         }
     }
 
+    public User getByUsername(String username) {
+        // Implementation for retrieving a user by username from the database
+        try(EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                            "SELECT u FROM User u WHERE u.username = :username", User.class)
+                    .setParameter("username", username)
+                    .getResultStream()
+                    .findFirst().orElse(null);
+        }
+    }
+
     @Override
     public User update(User user) {
         // Implementation for updating a user in the database

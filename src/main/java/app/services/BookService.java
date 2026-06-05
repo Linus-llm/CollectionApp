@@ -46,7 +46,8 @@ public class BookService {
     private static String getDataFromApiJsonWithHeader(String url) {
         String bodyText = null;
         try{
-            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("accept","application/json").version(HttpClient.Version.HTTP_1_1).GET().build();
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("accept","application/json")
+                    .version(HttpClient.Version.HTTP_1_1).GET().build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if ( response.statusCode()==200) {
                 bodyText = response.body();
