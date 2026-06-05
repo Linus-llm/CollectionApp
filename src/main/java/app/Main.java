@@ -67,7 +67,7 @@ public class Main {
         //AUTH
         app.post("/api/auth/login", securityController::login);
         app.post("/api/auth/register", securityController::register);
-        app.post("/api/auth/register/admin", securityController::adminRegister, Role.ADMIN);
+        app.post("/api/auth/register/admin", securityController::adminRegister);
         //USER
         app.get("/api/user", userController::handleGetUsers, Role.USER, Role.ADMIN);
         app.get("/api/user/{id}", userController::handleGetUserById, Role.USER, Role.ADMIN);
